@@ -102,9 +102,9 @@ export function UploadStep({ onProcessScript, onProcessAudio, isProcessing, erro
   return (
     <div className="max-w-4xl mx-auto p-6 space-y-6">
       <div className="text-center space-y-2">
-        <h1 className="text-3xl font-bold">Створіть своє відео з ШІ</h1>
+        <h1 className="text-3xl font-bold">Create Your AI-Powered Video</h1>
         <p className="text-muted-foreground">
-          Завантажте аудіофайл з озвучкою і дозвольте ШІ покращити процес створення відео
+          Upload an audio file with voiceover and let AI enhance your video creation process
         </p>
       </div>
 
@@ -122,9 +122,9 @@ export function UploadStep({ onProcessScript, onProcessAudio, isProcessing, erro
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Mic className="w-5 h-5" />
-              Завантажте аудіофайл
+              Upload Audio File
             </CardTitle>
-            <CardDescription>Завантажте аудіофайл з озвучкою для транскрибації і аналізу</CardDescription>
+            <CardDescription>Upload an audio file with voiceover for transcription and analysis</CardDescription>
           </CardHeader>
           <CardContent>
             <div
@@ -137,8 +137,8 @@ export function UploadStep({ onProcessScript, onProcessAudio, isProcessing, erro
               onDrop={handleDrop}
             >
               <Upload className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-              <p className="text-lg font-medium mb-2">Перетягніть і покладіть файли сюди</p>
-              <p className="text-sm text-muted-foreground mb-4">Підтримує аудіофайли (MP3, WAV)</p>
+              <p className="text-lg font-medium mb-2">Drag and drop files here</p>
+              <p className="text-sm text-muted-foreground mb-4">Supports audio files (MP3, WAV)</p>
               <input
                 type="file"
                 accept="audio/mpeg,audio/mp3,audio/wav,audio/x-wav,.txt"
@@ -149,7 +149,7 @@ export function UploadStep({ onProcessScript, onProcessAudio, isProcessing, erro
               />
               <Button asChild disabled={isProcessing}>
                 <label htmlFor="file-upload" className="cursor-pointer">
-                  Виберіть файли
+                  Choose Files
                 </label>
               </Button>
             </div>
@@ -167,7 +167,7 @@ export function UploadStep({ onProcessScript, onProcessAudio, isProcessing, erro
           <CardContent className="p-6">
             <div className="flex items-center justify-center space-x-2">
               <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
-              <span>ШІ аналізує ваш вміст...</span>
+              <span>AI is analyzing your content...</span>
             </div>
           </CardContent>
         </Card>

@@ -37,11 +37,11 @@ export default function VideoCreatorApp() {
   const getStepTitle = () => {
     switch (currentStep) {
       case "upload":
-        return "Завантажити аудіо"
+        return "Upload Audio"
       case "footage":
-        return "Вибрати відео та музику"
+        return "Select Video and Music"
       case "preview":
-        return "Переглянути та завантажити"
+        return "Preview and Download"
       default:
         return ""
     }
@@ -67,7 +67,7 @@ export default function VideoCreatorApp() {
             <div className="flex items-center justify-between mb-2">
               <h2 className="text-lg font-semibold">{getStepTitle()}</h2>
               <span className="text-sm text-muted-foreground">
-                Крок {["upload", "footage", "preview"].indexOf(currentStep) + 1} з 3
+                Step {["upload", "footage", "preview"].indexOf(currentStep) + 1} of 3
               </span>
             </div>
             <Progress value={getStepProgress()} className="w-full" />

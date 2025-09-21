@@ -14,10 +14,10 @@ export function Navbar() {
           <div className="flex items-center space-x-4">
             <div className="hidden md:flex space-x-4">
               <NavLink href="/" active={pathname === "/"}>
-                Створити новий
+                Create New
               </NavLink>
               <NavLink href="/projects" active={pathname === "/projects"}>
-                Мої проекти
+                My Projects
               </NavLink>
             </div>
           </div>

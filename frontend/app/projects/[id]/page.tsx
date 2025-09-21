@@ -71,10 +71,10 @@ export default function ProjectDetailsPage() {
           <Button variant="ghost" size="icon" onClick={handleBack} className="mr-2">
             <ChevronLeft size={16} />
           </Button>
-          <h1 className="text-2xl font-bold">Завантаження проекту...</h1>
+          <h1 className="text-2xl font-bold">Loading Project...</h1>
         </div>
         <div className="flex items-center justify-center h-64">
-          <p className="text-muted-foreground">Завантаження проектів...</p>
+          <p className="text-muted-foreground">Loading projects...</p>
         </div>
       </div>
     )
@@ -87,11 +87,11 @@ export default function ProjectDetailsPage() {
           <Button variant="ghost" size="icon" onClick={handleBack} className="mr-2">
             <ChevronLeft size={16} />
           </Button>
-          <h1 className="text-2xl font-bold">Проект не знайдений</h1>
+          <h1 className="text-2xl font-bold">Project Not Found</h1>
         </div>
         <div className="flex items-center justify-center h-64 bg-muted/20 rounded-lg border border-dashed">
           <p className="text-muted-foreground">
-            {error || "Цей проект не існує або був видалений."}
+            {error || "This project does not exist or has been deleted."}
           </p>
         </div>
       </div>
@@ -121,7 +121,7 @@ export default function ProjectDetailsPage() {
           </div>
         ) : (
           <div className="aspect-video bg-muted/30 rounded-lg flex items-center justify-center">
-            <p className="text-muted-foreground">Немає відео для цього проекту</p>
+            <p className="text-muted-foreground">No video available for this project</p>
           </div>
         )}
       </div>
@@ -130,15 +130,15 @@ export default function ProjectDetailsPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
           <div className="bg-card rounded-lg border p-4">
-            <h2 className="text-lg font-semibold mb-3">Інформація про проект</h2>
+            <h2 className="text-lg font-semibold mb-3">Project Information</h2>
             <div className="space-y-2">
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Сентенції</span>
+                <span className="text-muted-foreground">Sentences</span>
                 <span>{project.sentences?.length || 0}</span>
               </div>
               {project.backgroundMusic && (
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Фонова музика</span>
+                  <span className="text-muted-foreground">Background Music</span>
                   <span>{project.backgroundMusic.name}</span>
                 </div>
               )}
@@ -147,7 +147,7 @@ export default function ProjectDetailsPage() {
           
           {project.sentences && project.sentences.length > 0 && (
             <div className="bg-card rounded-lg border p-4">
-              <h2 className="text-lg font-semibold mb-3">Сентенції</h2>
+              <h2 className="text-lg font-semibold mb-3">Sentences</h2>
               <div className="space-y-3">
                 {project.sentences.map((sentence, index) => (
                   <div key={sentence.sentence_id || index} className="p-3 bg-muted/30 rounded-md">
@@ -166,7 +166,7 @@ export default function ProjectDetailsPage() {
         <div className="space-y-6">
           {selectedFootage && (
             <div className="bg-card rounded-lg border p-4">
-              <h2 className="text-lg font-semibold mb-3">Вибраний відеоматеріал</h2>
+              <h2 className="text-lg font-semibold mb-3">Selected Footage</h2>
               <div className="space-y-3">
                 <div className="aspect-video bg-muted/30 rounded-md overflow-hidden">
                   {selectedFootage.url ? (
@@ -214,14 +214,14 @@ export default function ProjectDetailsPage() {
           )}
           
           <div className="bg-card rounded-lg border p-4">
-            <h2 className="text-lg font-semibold mb-3">Дії</h2>
+            <h2 className="text-lg font-semibold mb-3">Actions</h2>
             <div className="space-y-3">
               <Button 
                 variant="outline" 
                 className="w-full"
                 onClick={() => router.push('/')}
               >
-                Створити новий проект
+                Create New Project
               </Button>
               {project.videoUrl && (
                 <Button 
@@ -229,7 +229,7 @@ export default function ProjectDetailsPage() {
                   onClick={handleDownloadVideo}
                 >
                   <Download size={16} className="mr-2" />
-                  Завантажити відео
+                  Download Video
                 </Button>
               )}
             </div>

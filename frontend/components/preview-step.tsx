@@ -76,8 +76,8 @@ export function PreviewStep({ project, onPrevious, renderProject, renderStatus, 
       return (
         <div className="text-center text-white">
           <div className="animate-spin w-16 h-16 mx-auto mb-4 border-4 border-white border-t-transparent rounded-full"></div>
-          <p className="text-lg">Відео обробляється...</p>
-          <p className="text-sm opacity-75">Це може зайняти кілька хвилин</p>
+          <p className="text-lg">Video is processing...</p>
+          <p className="text-sm opacity-75">This may take a few minutes</p>
         </div>
       )
     } else if ((renderStatus === "completed" || renderStatus === "complete") && videoUrl) {
@@ -109,7 +109,7 @@ export function PreviewStep({ project, onPrevious, renderProject, renderStatus, 
               });
             }}
           >
-            Ваш браузер не підтримує відео.
+            Your browser does not support the video tag.
           </video>
           {/* <div className="mt-2 text-xs text-gray-500 bg-gray-100 p-1 rounded text-center">
             Debug URL: {formattedUrl.split('/').pop()}
@@ -122,16 +122,16 @@ export function PreviewStep({ project, onPrevious, renderProject, renderStatus, 
           <div className="w-16 h-16 mx-auto mb-4 bg-red-500 rounded-full flex items-center justify-center">
             ❌
           </div>
-          <p className="text-lg">Відтворення не вдалося</p>
-          <p className="text-sm opacity-75">Спробуйте ще раз</p>
+          <p className="text-lg">Rendering failed</p>
+          <p className="text-sm opacity-75">Please try again</p>
         </div>
       )
     } else {
       return (
         <div className="text-center text-white">
           <Play className="w-16 h-16 mx-auto mb-4 opacity-50" />
-          <p className="text-lg">Готово до відтворення</p>
-          <p className="text-sm opacity-75">{formatTime(project.totalDuration)} тривалість</p>
+          <p className="text-lg">Ready to render</p>
+          <p className="text-sm opacity-75">{formatTime(project.totalDuration)} duration</p>
         </div>
       )
     }
@@ -143,7 +143,7 @@ export function PreviewStep({ project, onPrevious, renderProject, renderStatus, 
         <div className="flex gap-2">
           <Button disabled className="flex-1">
             <div className="animate-spin w-4 h-4 mr-2 border-2 border-white border-t-transparent rounded-full"></div>
-            Обробляється...
+            Processing...
           </Button>
         </div>
       )
@@ -161,11 +161,11 @@ export function PreviewStep({ project, onPrevious, renderProject, renderStatus, 
             className="flex-1"
           >
             <Play className="w-4 h-4 mr-2" />
-            Відтворити відео
+            Play Video
           </Button>
           <Button onClick={handleDownload} variant="default">
             <Download className="w-4 h-4 mr-2" />
-            Завантажити відео
+            Download Video
           </Button>
         </div>
       )
@@ -178,7 +178,7 @@ export function PreviewStep({ project, onPrevious, renderProject, renderStatus, 
             disabled={isProcessing}
           >
             <Play className="w-4 h-4 mr-2" />
-            Почати обробку
+            Start Processing
           </Button>
         </div>
       )
@@ -188,8 +188,8 @@ export function PreviewStep({ project, onPrevious, renderProject, renderStatus, 
   return (
     <div className="max-w-6xl mx-auto p-6 space-y-6">
       <div className="text-center space-y-2">
-        <h1 className="text-3xl font-bold">Перегляд відео</h1>
-        <p className="text-muted-foreground">Перевірте ваше відео перед завантаженням</p>
+        <h1 className="text-3xl font-bold">Video Preview</h1>
+        <p className="text-muted-foreground">Review your video before downloading</p>
       </div>
 
       <div className="grid lg:grid-cols-1 gap-6">

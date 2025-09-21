@@ -64,9 +64,9 @@ export default function ProjectsPage() {
   if (loading) {
     return (
       <div className="container mx-auto max-w-6xl py-8">
-        <h1 className="text-2xl font-bold mb-6">Мої проекти</h1>
+        <h1 className="text-2xl font-bold mb-6">My Projects</h1>
         <div className="flex items-center justify-center h-64">
-          <p className="text-muted-foreground">Завантаження проектів...</p>
+          <p className="text-muted-foreground">Loading projects...</p>
         </div>
       </div>
     )
@@ -75,7 +75,7 @@ export default function ProjectsPage() {
   if (error) {
     return (
       <div className="container mx-auto max-w-6xl py-8">
-        <h1 className="text-2xl font-bold mb-6">Мої проекти</h1>
+        <h1 className="text-2xl font-bold mb-6">My Projects</h1>
         <div className="flex items-center justify-center h-64">
           <p className="text-red-500">{error}</p>
         </div>
@@ -85,13 +85,13 @@ export default function ProjectsPage() {
 
   return (
     <div className="container mx-auto max-w-6xl py-8">
-      <h1 className="text-2xl font-bold mb-6">Мої проекти</h1>
+      <h1 className="text-2xl font-bold mb-6">My Projects</h1>
       
       {projects.length === 0 ? (
         <div className="flex flex-col items-center justify-center h-64 bg-muted/20 rounded-lg border border-dashed">
-          <p className="text-muted-foreground mb-4">У вас ще немає проектів</p>
+          <p className="text-muted-foreground mb-4">You don't have any projects yet</p>
           <Link href="/">
-            <Button>Створити новий проект</Button>
+            <Button>Create New Project</Button>
           </Link>
         </div>
       ) : (
@@ -113,7 +113,7 @@ export default function ProjectsPage() {
                       onMouseLeave={handleMouseLeave}
                     />
                   ) : (
-                    <p className="text-sm text-muted-foreground">Немає попереднього перегляду</p>
+                    <p className="text-sm text-muted-foreground">No preview available</p>
                   )}
                 </div>
                 <p className="text-sm text-muted-foreground">
@@ -123,7 +123,7 @@ export default function ProjectsPage() {
               </CardContent>
               <CardFooter className="px-4 py-3 border-t flex justify-between">
                 <Link href={`/projects/${project.id || project.project_id}`}>
-                  <Button variant="outline">Переглянути проект</Button>
+                  <Button variant="outline">View Project</Button>
                 </Link>
                 <Button 
                   variant="ghost" 
@@ -144,9 +144,9 @@ export default function ProjectsPage() {
       <AlertDialog open={!!projectToDelete} onOpenChange={(open) => !open && handleCancelDelete()}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Ви впевнені?</AlertDialogTitle>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              Ця дія не може бути скасована. Це видалить проект і всі пов'язані з ним дані.
+              This action cannot be undone. This will permanently delete the project and all its associated data.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

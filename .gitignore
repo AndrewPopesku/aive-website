@@ -210,3 +210,4 @@ pyrightconfig.json
 *.mp3*
 *m4a*
 *.wav*
+*.db*
