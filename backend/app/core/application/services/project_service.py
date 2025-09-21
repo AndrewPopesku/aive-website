@@ -1,4 +1,9 @@
-from typing import List, Optional, Dict, Any
+from __future__ import annotations
+
+from typing import List, Optional, Dict, Any, Union, TypedDict
+import logging
+from pathlib import Path
+
 from ...domain.entities.project import Project
 from ...domain.entities.sentence import Sentence, SelectedFootage
 from ...domain.entities.music import MusicRecommendation
@@ -8,10 +13,69 @@ from ...domain.repositories.music_repository import MusicRepository
 from ...domain.services.transcription_service import TranscriptionService
 from ...domain.services.footage_service import FootageService
 from ...domain.services.music_service import MusicService
+from ...domain.exceptions import (
+    EntityNotFoundError, 
+    ValidationError, 
+    BusinessRuleViolationError
+)
+
+logger = logging.getLogger(__name__)
+
+
+# TypedDict classes for better type safety
+class ProjectCreationResult(TypedDict):
+    """Result of project creation operation."""
+    project_id: str
+    project: Project
+    sentences: List[Sentence]
+
+
+class ProjectSummary(TypedDict):
+    """Summary information about a project."""
+    id: str
+    project_id: str
+    title: str
+    description: Optional[str]
+    audio_file_path: Optional[str]
+    created_at: str
+    updated_at: str
+    total_duration: Optional[float]
+    overall_mood: Optional[str]
+    videoUrl: Optional[str]
+    sentences: int
+    total_sentences: int
+
+
+class ProjectDetails(TypedDict):
+    """Detailed project information."""
+    id: str
+    project_id: str
+    title: str
+    description: Optional[str]
+    audio_file_path: Optional[str]
+    created_at: str
+    updated_at: str
+    total_duration: Optional[float]
+    overall_mood: Optional[str]
+    videoUrl: Optional[str]
+    sentences: List[Dict[str, Any]]
+    total_sentences: int
+
+
+class FootageChoice(TypedDict):
+    """Footage selection choice."""
+    sentence_id: str
+    footage_url: str
 
 
 class ProjectService:
-    """Application service for project-related use cases."""
+    """Application service for project-related use cases.
+    
+    This service orchestrates project creation, management, and related operations
+    by coordinating between domain entities, repositories, and domain services.
+    It implements use cases and business workflows while maintaining clean
+    separation between the application and domain layers.
+    """
     
     def __init__(
         self,
@@ -21,7 +85,26 @@ class ProjectService:
         transcription_service: TranscriptionService,
         footage_service: FootageService,
         music_service: MusicService
-    ):
+    ) -> None:
+        """Initialize the project service with required dependencies.
+        
+        Args:
+            project_repository: Repository for project persistence
+            sentence_repository: Repository for sentence persistence
+            music_repository: Repository for music recommendation persistence
+            transcription_service: Service for audio transcription
+            footage_service: Service for footage search and selection
+            music_service: Service for background music recommendations
+            
+        Raises:
+            TypeError: If any dependency is None or invalid type
+        """
+        if not all([
+            project_repository, sentence_repository, music_repository,
+            transcription_service, footage_service, music_service
+        ]):
+            raise TypeError("All service dependencies must be provided")
+            
         self._project_repository = project_repository
         self._sentence_repository = sentence_repository
         self._music_repository = music_repository
@@ -29,8 +112,44 @@ class ProjectService:
         self._footage_service = footage_service
         self._music_service = music_service
     
-    async def create_project(self, title: str, audio_file_path: str, description: Optional[str] = None) -> Dict[str, Any]:
-        """Create a new project with audio transcription and footage recommendations."""
+    async def create_project(
+        self, 
+        title: str, 
+        audio_file_path: str, 
+        description: Optional[str] = None
+    ) -> ProjectCreationResult:
+        """Create a new project with audio transcription and footage recommendations.
+        
+        Args:
+            title: Project title (must be non-empty)
+            audio_file_path: Path to the audio file for transcription
+            description: Optional project description
+            
+        Returns:
+            ProjectCreationResult with project details and sentences
+            
+        Raises:
+            ValidationError: If input parameters are invalid
+            FileNotFoundError: If audio file doesn't exist
+            TranscriptionError: If audio transcription fails
+            BusinessRuleViolationError: If business rules are violated
+        """
+        # Validate inputs
+        if not title.strip():
+            raise ValidationError(
+                "title", title, "Title cannot be empty", "Project"
+            )
+        
+        if len(title.strip()) > 200:
+            raise ValidationError(
+                "title", title, "Title cannot exceed 200 characters", "Project"
+            )
+        
+        audio_file = Path(audio_file_path)
+        if not audio_file.exists():
+            raise FileNotFoundError(f"Audio file not found: {audio_file_path}")
+        
+        logger.info(f"Creating project '{title}' with audio file: {audio_file_path}")
         # Create project entity
         project = Project(
             title=title,
