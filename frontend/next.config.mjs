@@ -13,7 +13,7 @@ const nextConfig = {
   distDir: 'out',
   trailingSlash: true,
   basePath: process.env.GITHUB_PAGES ? '/aive' : '',
-  assetPrefix: process.env.GITHUB_PAGES ? '/aive/' : '',
+  assetPrefix: process.env.GITHUB_PAGES ? '/aive' : '',
 }
 
 export default nextConfig
