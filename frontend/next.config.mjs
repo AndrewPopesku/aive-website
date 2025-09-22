@@ -9,6 +9,11 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
+  output: 'export',
+  distDir: 'out',
+  trailingSlash: true,
+  basePath: process.env.NODE_ENV === 'production' ? '/aive-website' : '',
+  assetPrefix: process.env.NODE_ENV === 'production' ? '/aive-website/' : '',
 }
 
 export default nextConfig

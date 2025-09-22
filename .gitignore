@@ -211,3 +211,6 @@ pyrightconfig.json
 *m4a*
 *.wav*
 *.db*
+
+# documentation
+WARP.md
