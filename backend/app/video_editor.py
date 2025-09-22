@@ -8,7 +8,7 @@ from typing import List, Dict, Any
 import aiohttp
 
 from datetime import datetime
-from moviepy import (
+from moviepy.editor import (
     VideoFileClip, 
     AudioFileClip, 
     TextClip,
