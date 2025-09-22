@@ -12,8 +12,8 @@ const nextConfig = {
   output: 'export',
   distDir: 'out',
   trailingSlash: true,
-  basePath: process.env.NODE_ENV === 'production' ? '/aive-website' : '',
-  assetPrefix: process.env.NODE_ENV === 'production' ? '/aive-website/' : '',
+  basePath: process.env.GITHUB_PAGES ? '/aive' : '',
+  assetPrefix: process.env.GITHUB_PAGES ? '/aive/' : '',
 }
 
 export default nextConfig
