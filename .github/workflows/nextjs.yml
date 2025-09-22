@@ -2,9 +2,9 @@ name: Deploy Next.js to GitHub Pages
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [ develop ]
   pull_request:
-    branches: [ main, master ]
+    branches: [ develop ]
 
 # Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
 permissions:
