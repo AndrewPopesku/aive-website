@@ -81,12 +81,23 @@ jobs:
       run: ${{ steps.detect-package-manager.outputs.manager }} ${{ steps.detect-package-manager.outputs.command }}
       working-directory: ./frontend
       
+    - name: Clean previous build
+      run: rm -rf ./frontend/out ./frontend/.next
+      
     - name: Build with Next.js
       run: ${{ steps.detect-package-manager.outputs.runner }} next build
       working-directory: ./frontend
       env:
         NODE_ENV: production
         GITHUB_PAGES: true
+        
+    - name: List build output
+      run: |
+        echo "Build output structure:"
+        find ./frontend/out -type f -name "*.css" -o -name "*.js" | head -20
+        
+    - name: Add .nojekyll file
+      run: touch ./frontend/out/.nojekyll
         
     - name: Upload artifact
       uses: actions/upload-pages-artifact@v3
