@@ -1,0 +1,103 @@
+[project]
+name = "aive-backend"
+version = "0.1.0"
+description = "AI Video Editor Backend - Modern Python backend for interactive video creation"
+requires-python = ">=3.13"
+readme = "README.md"
+dependencies = [
+    "fastapi>=0.116.0",
+    "uvicorn>=0.35.0",
+    "sqlmodel>=0.0.24",
+    "asyncpg>=0.30.0",
+    "alembic>=1.16.0",
+    "pydantic-settings>=2.10.0",
+    "python-multipart>=0.0.12",
+    "python-dotenv>=1.0.1",
+    "httpx>=0.28.0",
+    "groq>=0.4.0",
+    "moviepy>=1.0.3",
+    "python-jose[cryptography]>=3.3.0",
+    "uuid>=1.30",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0.0",
+    "httpx>=0.28.0",
+    "ruff>=0.11.0",
+    "pytest-cov>=6.2.0",
+    "pytest-asyncio>=1.1.0",
+]
+
+[build-system]
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.ruff]
+line-length = 120
+target-version = "py313"
+src = ["src", "tests"]
+exclude = [
+    ".bzr",
+    ".direnv",
+    ".eggs",
+    ".git",
+    ".ruff_cache",
+    ".venv",
+    "__pypackages__",
+    "build",
+    "dist",
+    "venv",
+]
+
+[tool.ruff.lint]
+select = [
+    "E",  # pycodestyle errors
+    "W",  # pycodestyle warnings
+    "F",  # pyflakes
+    "I",  # isort
+    "B",  # flake8-bugbear
+    "C4", # flake8-comprehensions
+    "UP", # pyupgrade
+]
+ignore = [
+    "E501",  # line too long, handled by black
+    "B008",  # do not perform function calls in argument defaults
+    "C901",  # too complex
+]
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py"]
+addopts = [
+    "--strict-markers",
+    "--strict-config",
+    "--disable-warnings",
+]
+env = [
+    "DATABASE_URL=postgresql+asyncpg://user:pass@localhost:5432/test_db",
+]
+asyncio_mode = "auto"
+filterwarnings = [
+    "ignore::DeprecationWarning",
+    "ignore::PendingDeprecationWarning",
+]
+
+[tool.coverage.run]
+source = ["src"]
+omit = [
+    "*/tests/*",
+    "*/migrations/*",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+]
