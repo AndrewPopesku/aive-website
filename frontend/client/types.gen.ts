@@ -12,6 +12,7 @@ export type BodyCreateProjectApiV1ProjectsPost = {
 
 /**
  * FootageChoice
+ * Legacy footage choice schema.
  */
 export type FootageChoice = {
     /**
@@ -26,6 +27,7 @@ export type FootageChoice = {
 
 /**
  * FootageChoices
+ * Legacy footage choices collection.
  */
 export type FootageChoices = {
     /**
@@ -46,6 +48,7 @@ export type HttpValidationError = {
 
 /**
  * MusicRecommendation
+ * Legacy music recommendation schema.
  */
 export type MusicRecommendation = {
     /**
@@ -64,6 +67,7 @@ export type MusicRecommendation = {
 
 /**
  * MusicResponse
+ * Music recommendation response.
  */
 export type MusicResponse = {
     /**
@@ -77,21 +81,8 @@ export type MusicResponse = {
 };
 
 /**
- * ProjectResponse
- */
-export type ProjectResponse = {
-    /**
-     * Project Id
-     */
-    project_id: string;
-    /**
-     * Sentences
-     */
-    sentences: Array<Sentence>;
-};
-
-/**
  * RenderRequest
+ * Schema for video render requests.
  */
 export type RenderRequest = {
     /**
@@ -106,6 +97,7 @@ export type RenderRequest = {
 
 /**
  * RenderResponse
+ * Response schema for render requests.
  */
 export type RenderResponse = {
     /**
@@ -120,6 +112,7 @@ export type RenderResponse = {
 
 /**
  * RenderStatusResponse
+ * Response schema for render status queries.
  */
 export type RenderStatusResponse = {
     /**
@@ -134,83 +127,10 @@ export type RenderStatusResponse = {
      * Error
      */
     error?: string | null;
-};
-
-/**
- * SelectedFootage
- */
-export type SelectedFootage = {
     /**
-     * Id
+     * Progress
      */
-    id: string;
-    /**
-     * Title
-     */
-    title: string;
-    /**
-     * Description
-     */
-    description: string;
-    /**
-     * Thumbnail
-     */
-    thumbnail: string;
-    /**
-     * Duration
-     */
-    duration: number;
-    /**
-     * Tags
-     */
-    tags: Array<string>;
-    /**
-     * Category
-     */
-    category: string;
-    /**
-     * Mood
-     */
-    mood: string;
-    /**
-     * Relevance Score
-     */
-    relevance_score: number;
-    /**
-     * Url
-     */
-    url: string;
-};
-
-/**
- * Sentence
- */
-export type Sentence = {
-    /**
-     * Sentence Id
-     */
-    sentence_id?: string;
-    /**
-     * Text
-     */
-    text: string;
-    /**
-     * Translated Text
-     */
-    translated_text?: string | null;
-    /**
-     * Start
-     */
-    start: number;
-    /**
-     * End
-     */
-    end: number;
-    /**
-     * Recommended Footage Url
-     */
-    recommended_footage_url?: string | null;
-    selected_footage?: SelectedFootage | null;
+    progress?: number | null;
 };
 
 /**
@@ -253,6 +173,20 @@ export type OptionsHandlerFullPathOptionsErrors = {
 export type OptionsHandlerFullPathOptionsError = OptionsHandlerFullPathOptionsErrors[keyof OptionsHandlerFullPathOptionsErrors];
 
 export type OptionsHandlerFullPathOptionsResponses = {
+    /**
+     * Successful Response
+     */
+    200: unknown;
+};
+
+export type HealthCheckHealthGetData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/health';
+};
+
+export type HealthCheckHealthGetResponses = {
     /**
      * Successful Response
      */
@@ -314,14 +248,17 @@ export type CreateProjectApiV1ProjectsPostError = CreateProjectApiV1ProjectsPost
 
 export type CreateProjectApiV1ProjectsPostResponses = {
     /**
+     * Response Create Project Api V1 Projects  Post
      * Successful Response
      */
-    200: ProjectResponse;
+    201: {
+        [key: string]: unknown;
+    };
 };
 
 export type CreateProjectApiV1ProjectsPostResponse = CreateProjectApiV1ProjectsPostResponses[keyof CreateProjectApiV1ProjectsPostResponses];
 
-export type DeleteProjectByIdApiV1ProjectsProjectIdDeleteData = {
+export type DeleteProjectApiV1ProjectsProjectIdDeleteData = {
     body?: never;
     path: {
         /**
@@ -333,23 +270,23 @@ export type DeleteProjectByIdApiV1ProjectsProjectIdDeleteData = {
     url: '/api/v1/projects/{project_id}';
 };
 
-export type DeleteProjectByIdApiV1ProjectsProjectIdDeleteErrors = {
+export type DeleteProjectApiV1ProjectsProjectIdDeleteErrors = {
     /**
      * Validation Error
      */
     422: HttpValidationError;
 };
 
-export type DeleteProjectByIdApiV1ProjectsProjectIdDeleteError = DeleteProjectByIdApiV1ProjectsProjectIdDeleteErrors[keyof DeleteProjectByIdApiV1ProjectsProjectIdDeleteErrors];
+export type DeleteProjectApiV1ProjectsProjectIdDeleteError = DeleteProjectApiV1ProjectsProjectIdDeleteErrors[keyof DeleteProjectApiV1ProjectsProjectIdDeleteErrors];
 
-export type DeleteProjectByIdApiV1ProjectsProjectIdDeleteResponses = {
+export type DeleteProjectApiV1ProjectsProjectIdDeleteResponses = {
     /**
      * Successful Response
      */
     204: void;
 };
 
-export type DeleteProjectByIdApiV1ProjectsProjectIdDeleteResponse = DeleteProjectByIdApiV1ProjectsProjectIdDeleteResponses[keyof DeleteProjectByIdApiV1ProjectsProjectIdDeleteResponses];
+export type DeleteProjectApiV1ProjectsProjectIdDeleteResponse = DeleteProjectApiV1ProjectsProjectIdDeleteResponses[keyof DeleteProjectApiV1ProjectsProjectIdDeleteResponses];
 
 export type GetProjectDetailsApiV1ProjectsProjectIdGetData = {
     body?: never;
@@ -422,7 +359,7 @@ export type PatchProjectApiV1ProjectsProjectIdPatchResponses = {
 
 export type PatchProjectApiV1ProjectsProjectIdPatchResponse = PatchProjectApiV1ProjectsProjectIdPatchResponses[keyof PatchProjectApiV1ProjectsProjectIdPatchResponses];
 
-export type UpdateProjectByIdApiV1ProjectsProjectIdPutData = {
+export type UpdateProjectApiV1ProjectsProjectIdPutData = {
     /**
      * Project Data
      */
@@ -439,18 +376,18 @@ export type UpdateProjectByIdApiV1ProjectsProjectIdPutData = {
     url: '/api/v1/projects/{project_id}';
 };
 
-export type UpdateProjectByIdApiV1ProjectsProjectIdPutErrors = {
+export type UpdateProjectApiV1ProjectsProjectIdPutErrors = {
     /**
      * Validation Error
      */
     422: HttpValidationError;
 };
 
-export type UpdateProjectByIdApiV1ProjectsProjectIdPutError = UpdateProjectByIdApiV1ProjectsProjectIdPutErrors[keyof UpdateProjectByIdApiV1ProjectsProjectIdPutErrors];
+export type UpdateProjectApiV1ProjectsProjectIdPutError = UpdateProjectApiV1ProjectsProjectIdPutErrors[keyof UpdateProjectApiV1ProjectsProjectIdPutErrors];
 
-export type UpdateProjectByIdApiV1ProjectsProjectIdPutResponses = {
+export type UpdateProjectApiV1ProjectsProjectIdPutResponses = {
     /**
-     * Response Update Project By Id Api V1 Projects  Project Id  Put
+     * Response Update Project Api V1 Projects  Project Id  Put
      * Successful Response
      */
     200: {
@@ -458,7 +395,7 @@ export type UpdateProjectByIdApiV1ProjectsProjectIdPutResponses = {
     };
 };
 
-export type UpdateProjectByIdApiV1ProjectsProjectIdPutResponse = UpdateProjectByIdApiV1ProjectsProjectIdPutResponses[keyof UpdateProjectByIdApiV1ProjectsProjectIdPutResponses];
+export type UpdateProjectApiV1ProjectsProjectIdPutResponse = UpdateProjectApiV1ProjectsProjectIdPutResponses[keyof UpdateProjectApiV1ProjectsProjectIdPutResponses];
 
 export type SubmitFootageChoicesApiV1ProjectsProjectIdFootagePostData = {
     body: FootageChoices;
@@ -491,7 +428,7 @@ export type SubmitFootageChoicesApiV1ProjectsProjectIdFootagePostResponses = {
 export type SubmitFootageChoicesApiV1ProjectsProjectIdFootagePostResponse = SubmitFootageChoicesApiV1ProjectsProjectIdFootagePostResponses[keyof SubmitFootageChoicesApiV1ProjectsProjectIdFootagePostResponses];
 
 export type RenderProjectApiV1ProjectsProjectIdRenderPostData = {
-    body: RenderRequest;
+    body?: never;
     path: {
         /**
          * Project Id
@@ -515,40 +452,162 @@ export type RenderProjectApiV1ProjectsProjectIdRenderPostResponses = {
     /**
      * Successful Response
      */
-    202: RenderResponse;
+    202: unknown;
 };
 
-export type RenderProjectApiV1ProjectsProjectIdRenderPostResponse = RenderProjectApiV1ProjectsProjectIdRenderPostResponses[keyof RenderProjectApiV1ProjectsProjectIdRenderPostResponses];
-
-export type GetRenderStatusApiV1ProjectsRenderStatusRenderTaskIdGetData = {
+export type GetProjectRenderStatusApiV1ProjectsRenderStatusTaskIdGetData = {
     body?: never;
     path: {
         /**
-         * Render Task Id
+         * Task Id
          */
-        render_task_id: string;
+        task_id: string;
     };
     query?: never;
-    url: '/api/v1/projects/render/status/{render_task_id}';
+    url: '/api/v1/projects/render/status/{task_id}';
 };
 
-export type GetRenderStatusApiV1ProjectsRenderStatusRenderTaskIdGetErrors = {
+export type GetProjectRenderStatusApiV1ProjectsRenderStatusTaskIdGetErrors = {
     /**
      * Validation Error
      */
     422: HttpValidationError;
 };
 
-export type GetRenderStatusApiV1ProjectsRenderStatusRenderTaskIdGetError = GetRenderStatusApiV1ProjectsRenderStatusRenderTaskIdGetErrors[keyof GetRenderStatusApiV1ProjectsRenderStatusRenderTaskIdGetErrors];
+export type GetProjectRenderStatusApiV1ProjectsRenderStatusTaskIdGetError = GetProjectRenderStatusApiV1ProjectsRenderStatusTaskIdGetErrors[keyof GetProjectRenderStatusApiV1ProjectsRenderStatusTaskIdGetErrors];
 
-export type GetRenderStatusApiV1ProjectsRenderStatusRenderTaskIdGetResponses = {
+export type GetProjectRenderStatusApiV1ProjectsRenderStatusTaskIdGetResponses = {
+    /**
+     * Successful Response
+     */
+    200: unknown;
+};
+
+export type RenderProjectApiV1RenderProjectIdRenderPostData = {
+    body: RenderRequest;
+    path: {
+        /**
+         * Project Id
+         */
+        project_id: string;
+    };
+    query?: never;
+    url: '/api/v1/render/{project_id}/render';
+};
+
+export type RenderProjectApiV1RenderProjectIdRenderPostErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type RenderProjectApiV1RenderProjectIdRenderPostError = RenderProjectApiV1RenderProjectIdRenderPostErrors[keyof RenderProjectApiV1RenderProjectIdRenderPostErrors];
+
+export type RenderProjectApiV1RenderProjectIdRenderPostResponses = {
+    /**
+     * Successful Response
+     */
+    202: RenderResponse;
+};
+
+export type RenderProjectApiV1RenderProjectIdRenderPostResponse = RenderProjectApiV1RenderProjectIdRenderPostResponses[keyof RenderProjectApiV1RenderProjectIdRenderPostResponses];
+
+export type GetRenderStatusApiV1RenderStatusTaskIdGetData = {
+    body?: never;
+    path: {
+        /**
+         * Task Id
+         */
+        task_id: string;
+    };
+    query?: never;
+    url: '/api/v1/render/status/{task_id}';
+};
+
+export type GetRenderStatusApiV1RenderStatusTaskIdGetErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type GetRenderStatusApiV1RenderStatusTaskIdGetError = GetRenderStatusApiV1RenderStatusTaskIdGetErrors[keyof GetRenderStatusApiV1RenderStatusTaskIdGetErrors];
+
+export type GetRenderStatusApiV1RenderStatusTaskIdGetResponses = {
     /**
      * Successful Response
      */
     200: RenderStatusResponse;
 };
 
-export type GetRenderStatusApiV1ProjectsRenderStatusRenderTaskIdGetResponse = GetRenderStatusApiV1ProjectsRenderStatusRenderTaskIdGetResponses[keyof GetRenderStatusApiV1ProjectsRenderStatusRenderTaskIdGetResponses];
+export type GetRenderStatusApiV1RenderStatusTaskIdGetResponse = GetRenderStatusApiV1RenderStatusTaskIdGetResponses[keyof GetRenderStatusApiV1RenderStatusTaskIdGetResponses];
+
+export type UpdateRenderStatusApiV1RenderStatusTaskIdPutData = {
+    /**
+     * Status Update
+     */
+    body: {
+        [key: string]: unknown;
+    };
+    path: {
+        /**
+         * Task Id
+         */
+        task_id: string;
+    };
+    query?: never;
+    url: '/api/v1/render/status/{task_id}';
+};
+
+export type UpdateRenderStatusApiV1RenderStatusTaskIdPutErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type UpdateRenderStatusApiV1RenderStatusTaskIdPutError = UpdateRenderStatusApiV1RenderStatusTaskIdPutErrors[keyof UpdateRenderStatusApiV1RenderStatusTaskIdPutErrors];
+
+export type UpdateRenderStatusApiV1RenderStatusTaskIdPutResponses = {
+    /**
+     * Successful Response
+     */
+    200: unknown;
+};
+
+export type GetProjectRenderTasksApiV1RenderProjectIdTasksGetData = {
+    body?: never;
+    path: {
+        /**
+         * Project Id
+         */
+        project_id: string;
+    };
+    query?: never;
+    url: '/api/v1/render/{project_id}/tasks';
+};
+
+export type GetProjectRenderTasksApiV1RenderProjectIdTasksGetErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type GetProjectRenderTasksApiV1RenderProjectIdTasksGetError = GetProjectRenderTasksApiV1RenderProjectIdTasksGetErrors[keyof GetProjectRenderTasksApiV1RenderProjectIdTasksGetErrors];
+
+export type GetProjectRenderTasksApiV1RenderProjectIdTasksGetResponses = {
+    /**
+     * Response Get Project Render Tasks Api V1 Render  Project Id  Tasks Get
+     * Successful Response
+     */
+    200: {
+        [key: string]: unknown;
+    };
+};
+
+export type GetProjectRenderTasksApiV1RenderProjectIdTasksGetResponse = GetProjectRenderTasksApiV1RenderProjectIdTasksGetResponses[keyof GetProjectRenderTasksApiV1RenderProjectIdTasksGetResponses];
 
 export type ClientOptions = {
     baseURL: `${string}://openapi.json` | (string & {});

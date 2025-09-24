@@ -228,7 +228,7 @@ class VideoEditor:
                             text=text,
                             font_size=50,
                             color='white',
-                            font='Arial-Bold',
+                            font='Arial',
                             stroke_color='black',
                             stroke_width=2,
                             size=(1800, None),  # Max width with margins
@@ -236,7 +236,7 @@ class VideoEditor:
                         ).with_duration(duration)
                         
                         # Position subtitle at bottom of screen
-                        subtitle = subtitle.with_position(('center', 'bottom')).with_margin(bottom=100)
+                        subtitle = subtitle.with_position(('center', 'bottom'))
                         
                         # Composite video with subtitle
                         video_clip = CompositeVideoClip([video_clip, subtitle])

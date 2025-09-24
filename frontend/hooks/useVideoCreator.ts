@@ -5,8 +5,8 @@ import type { VideoProject, Sentence, StockFootage, BackgroundMusic, ProjectCrea
 import { 
   createProjectApiV1ProjectsPost, 
   submitFootageChoicesApiV1ProjectsProjectIdFootagePost,
-  renderProjectApiV1ProjectsProjectIdRenderPost,
-  getRenderStatusApiV1ProjectsRenderStatusRenderTaskIdGet
+  renderProjectApiV1RenderProjectIdRenderPost,
+  getRenderStatusApiV1RenderStatusTaskIdGet
 } from "@/client"
 import { apiClient } from "@/lib/api-client"
 
@@ -308,12 +308,14 @@ export function useVideoCreator() {
         console.log("Including background music:", musicUrl);
       }
       
-      const response = await renderProjectApiV1ProjectsProjectIdRenderPost({
+      const response = await renderProjectApiV1RenderProjectIdRenderPost({
         client: apiClient,
         path: {
           project_id: project.project_id!
         },
-        body: requestBody
+        body: {
+          options: requestBody
+        }
       })
 
       if (response.error) {
@@ -342,10 +344,10 @@ export function useVideoCreator() {
   // Step D: Poll render status
   const pollRenderStatus = useCallback(async (taskId: string) => {
     try {
-      const response = await getRenderStatusApiV1ProjectsRenderStatusRenderTaskIdGet({
+      const response = await getRenderStatusApiV1RenderStatusTaskIdGet({
         client: apiClient,
         path: {
-          render_task_id: taskId
+          task_id: taskId
         }
       })
 

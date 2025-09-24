@@ -8,7 +8,7 @@ mkdir -p frontend/client
 
 # Generate OpenAPI schema from FastAPI app
 cd backend
-python3 -c "import app.main; import json; print(json.dumps(app.main.app.openapi()))" > ../openapi.json
+PYTHONPATH=src python3 -c "import src.main; import json; print(json.dumps(src.main.app.openapi()))" > ../openapi.json
 cd ..
 
 # Move to frontend directory
