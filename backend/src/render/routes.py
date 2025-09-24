@@ -1,5 +1,6 @@
 import os
 import logging
+from pathlib import Path
 from typing import Dict, Any
 from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks, Request
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -97,8 +98,9 @@ async def render_project(
                     output_filename=output_filename
                 )
                 
-                # Convert to relative path for URL
-                relative_path = f"/api/videos/{output_filename}"
+                # Extract the actual filename from the returned path
+                actual_filename = Path(output_path).name
+                relative_path = f"/api/videos/{actual_filename}"
                 
                 # Update status to complete
                 await controller.update_render_status(

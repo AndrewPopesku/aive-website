@@ -1,6 +1,7 @@
 import logging
 import os
 import asyncio
+from datetime import datetime
 from pathlib import Path
 from typing import List, Dict, Any, Optional
 import httpx
@@ -8,13 +9,23 @@ from base.config import get_settings
 
 # Import MoviePy components
 try:
-    from moviepy.editor import (
+    from moviepy import (
         VideoFileClip, AudioFileClip, TextClip,
         CompositeVideoClip, CompositeAudioClip,
         concatenate_videoclips, concatenate_audioclips
     )
     MOVIEPY_AVAILABLE = True
 except ImportError:
+    # Define placeholder classes for type hints
+    class VideoFileClip: pass
+    class AudioFileClip: pass
+    class TextClip: pass
+    class CompositeVideoClip: pass
+    class CompositeAudioClip: pass
+    
+    def concatenate_videoclips(*args, **kwargs): pass
+    def concatenate_audioclips(*args, **kwargs): pass
+    
     MOVIEPY_AVAILABLE = False
     logging.warning("MoviePy not available. Video rendering will be disabled.")
 
@@ -68,7 +79,15 @@ class VideoEditor:
         if not output_filename:
             output_filename = f"{project_id}_final_video.mp4"
         
-        output_path = self.output_dir / output_filename
+        # Add timestamp to filename to ensure uniqueness
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        name_parts = output_filename.rsplit('.', 1)
+        if len(name_parts) == 2:
+            timestamped_filename = f"{name_parts[0]}_{timestamp}.{name_parts[1]}"
+        else:
+            timestamped_filename = f"{output_filename}_{timestamp}"
+        
+        output_path = self.output_dir / timestamped_filename
         
         try:
             # Step 1: Download all footage
@@ -206,8 +225,8 @@ class VideoEditor:
                     try:
                         # Create subtitle
                         subtitle = TextClip(
-                            txt=text,
-                            fontsize=50,
+                            text=text,
+                            font_size=50,
                             color='white',
                             font='Arial-Bold',
                             stroke_color='black',
