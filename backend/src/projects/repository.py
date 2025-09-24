@@ -15,8 +15,8 @@ class ProjectRepository(BaseRepository[Project]):
     async def get_by_title(self, session: AsyncSession, title: str) -> Optional[Project]:
         """Get a project by title."""
         statement = select(self.model).where(self.model.title == title)
-        result = await session.exec(statement)
-        return result.first()
+        result = await session.execute(statement)
+        return result.scalar_one_or_none()
 
 
 class SentenceRepository(BaseRepository[Sentence]):
@@ -28,8 +28,8 @@ class SentenceRepository(BaseRepository[Sentence]):
     async def get_by_project_id(self, session: AsyncSession, project_id: str) -> List[Sentence]:
         """Get all sentences for a specific project."""
         statement = select(self.model).where(self.model.project_id == project_id)
-        result = await session.exec(statement)
-        return result.all()
+        result = await session.execute(statement)
+        return result.scalars().all()
     
     async def create_multiple(
         self, 
@@ -99,14 +99,14 @@ class FootageChoiceRepository(BaseRepository[FootageChoice]):
     async def get_by_project_id(self, session: AsyncSession, project_id: str) -> List[FootageChoice]:
         """Get all footage choices for a specific project."""
         statement = select(self.model).where(self.model.project_id == project_id)
-        result = await session.exec(statement)
-        return result.all()
+        result = await session.execute(statement)
+        return result.scalars().all()
     
     async def get_by_sentence_id(self, session: AsyncSession, sentence_id: str) -> Optional[FootageChoice]:
         """Get footage choices for a specific sentence."""
         statement = select(self.model).where(self.model.sentence_id == sentence_id)
-        result = await session.exec(statement)
-        return result.first()
+        result = await session.execute(statement)
+        return result.scalar_one_or_none()
     
     async def create_multiple(
         self, 
@@ -141,8 +141,8 @@ class MusicRecommendationRepository(BaseRepository[MusicRecommendation]):
     async def get_by_project_id(self, session: AsyncSession, project_id: str) -> List[MusicRecommendation]:
         """Get all music recommendations for a specific project."""
         statement = select(self.model).where(self.model.project_id == project_id)
-        result = await session.exec(statement)
-        return result.all()
+        result = await session.execute(statement)
+        return result.scalars().all()
     
     async def create_multiple(
         self, 

@@ -13,7 +13,9 @@ class BaseRepository(Generic[ModelType]):
     
     async def create(self, session: AsyncSession, obj_in: Dict[str, Any]) -> ModelType:
         """Create a new object in the database."""
-        db_obj = self.model(**obj_in)
+        # Convert HttpUrl objects to strings for JSON serialization
+        processed_obj_in = self._process_httourls(obj_in)
+        db_obj = self.model(**processed_obj_in)
         session.add(db_obj)
         await session.commit()
         await session.refresh(db_obj)
@@ -22,8 +24,8 @@ class BaseRepository(Generic[ModelType]):
     async def get(self, session: AsyncSession, id: Any) -> Optional[ModelType]:
         """Get an object by ID."""
         statement = select(self.model).where(self.model.id == id)
-        result = await session.exec(statement)
-        return result.first()
+        result = await session.execute(statement)
+        return result.scalar_one_or_none()
     
     async def get_all(
         self, 
@@ -44,8 +46,8 @@ class BaseRepository(Generic[ModelType]):
         # Apply pagination
         statement = statement.offset(skip).limit(limit)
         
-        result = await session.exec(statement)
-        return result.all()
+        result = await session.execute(statement)
+        return result.scalars().all()
     
     async def update(
         self, 
@@ -58,7 +60,10 @@ class BaseRepository(Generic[ModelType]):
         if not db_obj:
             return None
         
-        for key, value in obj_in.items():
+        # Convert HttpUrl objects to strings for JSON serialization
+        processed_obj_in = self._process_httourls(obj_in)
+        
+        for key, value in processed_obj_in.items():
             if hasattr(db_obj, key):
                 setattr(db_obj, key, value)
         
@@ -97,5 +102,21 @@ class BaseRepository(Generic[ModelType]):
                 if hasattr(self.model, key):
                     statement = statement.where(getattr(self.model, key) == value)
         
-        result = await session.exec(statement)
-        return result.one()
+        result = await session.execute(statement)
+        return result.scalar_one()
+    
+    def _process_httourls(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        """Recursively convert HttpUrl objects to strings for JSON serialization."""
+        from pydantic import HttpUrl
+        
+        processed_data = {}
+        for key, value in data.items():
+            if isinstance(value, HttpUrl):
+                processed_data[key] = str(value)
+            elif isinstance(value, dict):
+                processed_data[key] = self._process_httourls(value)
+            elif isinstance(value, list):
+                processed_data[key] = [self._process_httourls(item) if isinstance(item, dict) else str(item) if hasattr(item, '__class__') and item.__class__.__name__ == 'HttpUrl' else item for item in value]
+            else:
+                processed_data[key] = value
+        return processed_data

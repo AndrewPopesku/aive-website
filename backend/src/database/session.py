@@ -37,6 +37,16 @@ async def get_session() -> AsyncGenerator[AsyncSession, None]:
             await session.close()
 
 
+def get_async_session():
+    """
+    Get async session factory for background tasks.
+    
+    Returns:
+        AsyncSessionLocal: Session factory that can be used with async context manager
+    """
+    return AsyncSessionLocal()
+
+
 async def create_db_and_tables():
     """
     Create database and tables.

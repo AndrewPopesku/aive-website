@@ -14,7 +14,7 @@ class RenderTaskRepository(BaseRepository[RenderTask]):
     async def get_by_project_id(self, session: AsyncSession, project_id: str) -> List[RenderTask]:
         """Get all render tasks for a specific project."""
         statement = select(self.model).where(self.model.project_id == project_id)
-        result = await session.exec(statement)
+        result = await session.execute(statement)
         return result.all()
     
     async def get_latest_by_project_id(self, session: AsyncSession, project_id: str) -> Optional[RenderTask]:
@@ -24,7 +24,7 @@ class RenderTaskRepository(BaseRepository[RenderTask]):
             .where(self.model.project_id == project_id)
             .order_by(self.model.created_at.desc())
         )
-        result = await session.exec(statement)
+        result = await session.execute(statement)
         return result.first()
     
     async def get_completed_by_project_id(self, session: AsyncSession, project_id: str) -> List[RenderTask]:
@@ -35,7 +35,7 @@ class RenderTaskRepository(BaseRepository[RenderTask]):
             .where(self.model.status == "complete")
             .order_by(self.model.created_at.desc())
         )
-        result = await session.exec(statement)
+        result = await session.execute(statement)
         return result.all()
     
     async def update_status(

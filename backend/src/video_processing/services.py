@@ -202,10 +202,14 @@ async def find_background_music(sentence_texts: Optional[List[str]] = None) -> L
             music_id = f"music-{i+1}"
             name = music_file.stem  # Use filename without extension as the name
             
+            # Create URL that can be served by the static files endpoint
+            relative_path = music_file.relative_to(settings.audio_dir)
+            audio_url = f"/api/audio/{relative_path}"
+            
             music_recommendations.append({
                 "id": music_id,
                 "name": name,
-                "url": str(music_file)
+                "url": audio_url
             })
             
             logger.info(f"Added music file: {name} at {music_file}")

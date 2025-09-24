@@ -21,7 +21,7 @@ class SelectedFootage(BaseModel):
     category: str
     mood: str
     relevance_score: int
-    url: HttpUrl
+    url: str  # Changed from HttpUrl to str to avoid JSON serialization issues
 
 
 # Project Schemas
@@ -150,14 +150,14 @@ class Sentence(BaseModel):
     translated_text: Optional[str] = None
     start: float
     end: float
-    recommended_footage_url: Optional[HttpUrl] = None
+    recommended_footage_url: Optional[str] = None
     selected_footage: Optional[SelectedFootage] = None
 
 
 class FootageChoice(BaseModel):
     """Legacy footage choice schema."""
     sentence_id: str
-    footage_url: HttpUrl
+    footage_url: str
 
 
 class FootageChoices(BaseModel):

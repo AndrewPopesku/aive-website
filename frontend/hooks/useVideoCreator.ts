@@ -66,7 +66,7 @@ export function useVideoCreator() {
         // Convert API sentences to frontend format
         const sentences: Sentence[] = data.sentences.map((sentence: any) => ({
           ...sentence,
-          sentence_id: sentence.sentence_id || `sentence-${Date.now()}-${Math.random()}`,
+          sentence_id: sentence.sentence_id, // Use backend-provided sentence_id
           // Map API field names to frontend expectations
           startTime: sentence.start,
           endTime: sentence.end,
@@ -191,42 +191,10 @@ export function useVideoCreator() {
     try {
       const footageChoices = project.sentences
         .filter(s => s.selectedFootage)
-        .map(s => {
-          // Create a unique numeric ID from the sentence ID
-          let numericId = 1;
-          if (s.sentence_id) {
-            // Try to extract numeric part if it exists (e.g., "sent-123" -> 123)
-            // or create a simple hash from the full string
-            try {
-              // First try to extract any numbers from the string
-              const matches = s.sentence_id.match(/\d+/);
-              if (matches && matches.length > 0) {
-                numericId = parseInt(matches[0]);
-              } else {
-                // If no numbers found, use a string hash function
-                numericId = Math.abs(s.sentence_id.split('').reduce((a, b) => {
-                  a = ((a << 5) - a) + b.charCodeAt(0);
-                  return a & a;
-                }, 0)) % 100000; // Keep it under 100000
-              }
-            } catch (err) {
-              console.warn("Error parsing sentence_id:", err);
-              numericId = 1;
-            }
-          } else {
-            // If no sentence_id at all, use a hash of the text
-            numericId = Math.abs(s.text.split('').reduce((a, b) => { 
-              a = ((a << 5) - a) + b.charCodeAt(0); 
-              return a & a; 
-            }, 0)) % 100000; // Keep it under 100000
-          }
-          
-          // Ensure sentence_id is a number
-          return {
-            sentence_id: String(numericId), // Convert to string to match the FootageChoice type
-            footage_url: s.selectedFootage!.url || s.selectedFootage!.thumbnail // Use actual URL or fallback to thumbnail
-          };
-        });
+        .map(s => ({
+          sentence_id: s.sentence_id, // Use backend-provided sentence ID directly
+          footage_url: s.selectedFootage!.url || s.selectedFootage!.thumbnail // Use actual URL or fallback to thumbnail
+        }));
 
       if (footageChoices.length === 0) {
         setIsProcessing(false)
@@ -253,19 +221,14 @@ export function useVideoCreator() {
       
       console.log("📻 Received music recommendations from API:", data.recommended_music)
       
-      // If we didn't get any music recommendations, add fallback options
+      // If we didn't get any music recommendations, add local audio file fallback
       if (!data.recommended_music || data.recommended_music.length === 0) {
-        console.warn("No music recommendations received from API, using fallback options")
+        console.warn("No music recommendations received from API, using local audio file")
         data.recommended_music = [
           {
-            id: "music-fallback-1",
-            name: "Upbeat Corporate",
-            url: "https://cdn.pixabay.com/audio/2022/01/18/audio_dc78aecf92.mp3"
-          },
-          {
-            id: "music-fallback-2", 
-            name: "Cinematic Documentary",
-            url: "https://cdn.pixabay.com/audio/2022/05/27/audio_1808fbf07a.mp3"
+            id: "music-local-1",
+            name: "Ambient Corporate Music",
+            url: "/api/static/audio/Ambient Corporate Music.mp3"
           }
         ] as any
       }
@@ -293,32 +256,19 @@ export function useVideoCreator() {
       })
     } catch (error) {
       console.error("Footage submission error:", error)
-      // Add fallback music options if API call fails
+      // Add fallback music options if API call fails - use local audio file
       const fallbackMusic = [
         {
           id: "music-error-1",
-          name: "Upbeat Corporate",
-          url: "https://cdn.pixabay.com/audio/2022/01/18/audio_dc78aecf92.mp3",
-          artist: "Unknown Artist",
+          name: "Ambient Corporate Music",
+          url: "/api/static/audio/Ambient Corporate Music.mp3",
+          artist: "Local Artist",
           duration: 120,
           genre: "Background",
           mood: "neutral",
           tempo: "medium",
-          description: "Background music: Upbeat Corporate",
-          preview: "https://cdn.pixabay.com/audio/2022/01/18/audio_dc78aecf92.mp3",
-          suitability: 0.8
-        },
-        {
-          id: "music-error-2",
-          name: "Inspiring Technology",
-          url: "https://cdn.pixabay.com/audio/2022/03/15/audio_942433522a.mp3",
-          artist: "Unknown Artist",
-          duration: 120,
-          genre: "Background",
-          mood: "neutral",
-          tempo: "medium", 
-          description: "Background music: Inspiring Technology",
-          preview: "https://cdn.pixabay.com/audio/2022/03/15/audio_942433522a.mp3",
+          description: "Background music: Ambient Corporate Music",
+          preview: "/api/static/audio/Ambient Corporate Music.mp3",
           suitability: 0.8
         }
       ]

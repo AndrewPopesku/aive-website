@@ -88,6 +88,17 @@ try:
 except Exception as e:
     logger.warning(f"Could not mount static files: {e}")
 
+# Mount static files for audio/music
+try:
+    app.mount(
+        "/api/audio", 
+        StaticFiles(directory=str(settings.audio_dir)), 
+        name="audio"
+    )
+    logger.info(f"Mounted static files at /api/audio -> {settings.audio_dir}")
+except Exception as e:
+    logger.warning(f"Could not mount audio static files: {e}")
+
 
 # Health check endpoint
 @app.get("/health")
