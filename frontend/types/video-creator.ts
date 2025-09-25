@@ -1,16 +1,22 @@
 // Import types from the generated API client
 import type { 
-  Sentence as APISentence, 
   MusicRecommendation, 
   FootageChoice,
-  ProjectResponse,
   MusicResponse,
   RenderRequest,
   RenderResponse,
   RenderStatusResponse 
 } from '../client'
 
-export interface Sentence extends APISentence {
+export interface Sentence {
+  text: string
+  start: number
+  end: number
+  sentence_id?: string
+  start_time?: number  // For backward compatibility with API
+  end_time?: number    // For backward compatibility with API
+  id?: string         // Alternative ID field
+  recommended_footage_url?: string  // For API recommended footage
   keywords?: string[]
   mood?: string
   visualCues?: string[]
@@ -63,7 +69,8 @@ export interface VideoProject {
 }
 
 // New types for the backend workflow
-export interface ProjectCreationResult extends ProjectResponse {
+export interface ProjectCreationResult {
+  project_id: string
   sentences: Sentence[]
 }
 

@@ -5,7 +5,7 @@ import { VideoProject } from "@/types/video-creator"
 import { 
   getAllProjectsApiV1ProjectsGet, 
   getProjectDetailsApiV1ProjectsProjectIdGet,
-  deleteProjectByIdApiV1ProjectsProjectIdDelete
+  deleteProjectApiV1ProjectsProjectIdDelete
 } from "@/client"
 import { apiClient } from "@/lib/api-client"
 
@@ -46,9 +46,14 @@ export function useProjects() {
           id: item.project_id,
           project_id: item.project_id,
           title: `Project ${item.project_id}`,
-          sentences: item.sentences || [],
+          sentences: item.sentences && Array.isArray(item.sentences) ? (item.sentences as any[]).map((s: any, index: number) => ({
+            ...s,
+            start: s.start_time || s.start || 0,
+            end: s.end_time || s.end || 0,
+            sentence_id: s.sentence_id || s.id || index.toString()
+          })) : [],
           totalDuration: item.sentences && Array.isArray(item.sentences) 
-            ? item.sentences.reduce((total: number, s: any) => total + (s.end_time - s.start_time), 0) 
+            ? item.sentences.reduce((total: number, s: any) => total + ((s.end_time || s.end || 0) - (s.start_time || s.start || 0)), 0) 
             : 0,
           videoUrl: videoUrl,
           renderStatus: item.render_status || 'pending',
@@ -94,9 +99,14 @@ export function useProjects() {
         id: project.project_id,
         project_id: project.project_id,
         title: `Project ${project.project_id}`,
-        sentences: project.sentences || [],
+        sentences: project.sentences && Array.isArray(project.sentences) ? (project.sentences as any[]).map((s: any, index: number) => ({
+          ...s,
+          start: s.start_time || s.start || 0,
+          end: s.end_time || s.end || 0,
+          sentence_id: s.sentence_id || s.id || index.toString()
+        })) : [],
         totalDuration: project.sentences && Array.isArray(project.sentences)
-          ? project.sentences.reduce((total: number, s: any) => total + (s.end_time - s.start_time), 0)
+          ? project.sentences.reduce((total: number, s: any) => total + ((s.end_time || s.end || 0) - (s.start_time || s.start || 0)), 0)
           : 0,
         videoUrl: videoUrl,
         renderStatus: project.render_status || 'pending',
@@ -112,7 +122,7 @@ export function useProjects() {
   const deleteProject = useCallback(async (projectId: string) => {
     try {
       // Use the client method instead of direct fetch
-      const response = await deleteProjectByIdApiV1ProjectsProjectIdDelete({
+      const response = await deleteProjectApiV1ProjectsProjectIdDelete({
         client: apiClient,
         path: {
           project_id: projectId

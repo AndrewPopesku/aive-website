@@ -190,9 +190,9 @@ export function useVideoCreator() {
 
     try {
       const footageChoices = project.sentences
-        .filter(s => s.selectedFootage)
+        .filter(s => s.selectedFootage && s.sentence_id) // Only include sentences with both selected footage and sentence ID
         .map(s => ({
-          sentence_id: s.sentence_id, // Use backend-provided sentence ID directly
+          sentence_id: s.sentence_id!, // Use backend-provided sentence ID directly (non-null assertion safe after filter)
           footage_url: s.selectedFootage!.url || s.selectedFootage!.thumbnail // Use actual URL or fallback to thumbnail
         }));
 
@@ -313,9 +313,7 @@ export function useVideoCreator() {
         path: {
           project_id: project.project_id!
         },
-        body: {
-          options: requestBody
-        }
+        body: requestBody
       })
 
       if (response.error) {
