@@ -1,6 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   // Reduce file watching sensitivity
+  output: "export",
   webpack: (config, { dev }) => {
     if (dev) {
       config.watchOptions = {
