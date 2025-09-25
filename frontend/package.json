@@ -7,6 +7,9 @@
     "build": "next build",
     "export": "next build && next export",
     "start": "next start",
+    "serve": "npx serve out -s",
+    "build:serve": "npm run build && npm run serve",
+    "build:github": "GITHUB_PAGES=true npm run build",
     "lint": "next lint"
   },
   "dependencies": {

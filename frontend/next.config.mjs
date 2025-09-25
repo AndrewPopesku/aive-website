@@ -12,8 +12,11 @@ const nextConfig = {
   output: 'export',
   distDir: 'out',
   trailingSlash: true,
-  basePath: process.env.GITHUB_PAGES ? '/aive' : '',
-  assetPrefix: process.env.GITHUB_PAGES ? '/aive' : '',
+  // Only use basePath/assetPrefix for GitHub Pages build
+  ...(process.env.GITHUB_PAGES && {
+    basePath: '/aive',
+    assetPrefix: '/aive',
+  }),
 }
 
 export default nextConfig
