@@ -4,12 +4,12 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import JSONResponse
-from base.config import get_settings
-from database.session import create_db_and_tables, close_db
+from src.base.config import get_settings
+from src.database.session import create_db_and_tables, close_db
 
 # Import routers
-from projects.routes import router as projects_router
-from render.routes import router as render_router
+from src.projects.routes import router as projects_router
+from src.render.routes import router as render_router
 
 # Configure logging
 logging.basicConfig(
@@ -155,7 +155,7 @@ async def global_exception_handler(request: Request, exc: Exception):
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(
-        "src.server_api:app",
+        "src.main:app",
         host="0.0.0.0",
         port=8000,
         reload=settings.debug,

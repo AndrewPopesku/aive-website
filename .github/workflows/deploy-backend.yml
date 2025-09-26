@@ -76,10 +76,15 @@ jobs:
         API_PREFIX=/api
         EOF
         
-        # Run database migrations
-        echo "Running database migrations..."
-        source .venv/bin/activate
-        alembic upgrade head || echo "No migrations to run"
+        # Run database migrations (only if alembic.ini exists)
+        echo "Checking for database migrations..."
+        if [ -f alembic.ini ]; then
+          echo "Running database migrations..."
+          source .venv/bin/activate
+          alembic upgrade head || echo "Failed to run migrations"
+        else
+          echo "No alembic.ini found, skipping migrations"
+        fi
         
         # Set up systemd service
         echo "Setting up systemd service..."
@@ -155,11 +160,19 @@ jobs:
         
         # Check service status
         sleep 5
-        sudo systemctl status aive-backend --no-pager
+        sudo systemctl status aive-backend --no-pager || true
+        
+        # Check service logs for errors
+        echo "Checking service logs..."
+        sudo journalctl -u aive-backend -n 50 --no-pager || true
         
         # Test the API
         echo "Testing API health endpoint..."
-        curl -f http://localhost:8000/health || echo "Health check failed"
+        curl -f http://localhost:8000/health || {
+          echo "Health check failed, checking service logs again..."
+          sudo journalctl -u aive-backend -n 100 --no-pager
+          exit 1
+        }
         
         echo "=== Deployment Complete ==="
         '
