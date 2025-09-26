@@ -155,16 +155,12 @@ cd frontend
 npm run test
 ```
 
-## 📄 License
-
-This project is part of a university assignment. Please check with the repository owner for licensing information.
-
 ## 🤝 Contributing
 
 1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+2. Create your feature branch (`git checkout -b feat/amazing-feature`)
 3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
+4. Push to the branch (`git push origin feat/amazing-feature`)
 5. Open a Pull Request
 
 ## 🙏 Acknowledgments
@@ -172,7 +168,3 @@ This project is part of a university assignment. Please check with the repositor
 - Built as part of university coursework
 - Uses Groq API for AI capabilities
 - Stock footage integration powered by external APIs
-
----
-
-For questions or support, please contact the repository maintainer.
