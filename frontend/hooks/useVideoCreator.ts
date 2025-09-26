@@ -47,7 +47,8 @@ export function useVideoCreator() {
         formData.append('audio_file', file);
         
         // Make direct fetch request to avoid SDK issues
-        const response = await fetch('http://localhost:8000/api/v1/projects/', {
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+        const response = await fetch(`${apiUrl}/api/v1/projects/`, {
           method: 'POST',
           body: formData,
           // No Content-Type header - browser will set it with boundary

@@ -10,7 +10,7 @@ import {
 import { apiClient } from "@/lib/api-client"
 
 // Base API URL for formatting video URLs
-const API_BASE_URL = "http://localhost:8000";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 export function useProjects() {
   const [projects, setProjects] = useState<VideoProject[]>([])

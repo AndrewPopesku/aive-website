@@ -82,7 +82,8 @@ export function PreviewStep({ project, onPrevious, renderProject, renderStatus, 
       )
     } else if ((renderStatus === "completed" || renderStatus === "complete") && videoUrl) {
       console.log("Video URL in preview component:", videoUrl);
-      const formattedUrl = videoUrl.startsWith('http') ? videoUrl : `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}${videoUrl}`;
+      const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+      const formattedUrl = videoUrl.startsWith('http') ? videoUrl : `${apiBaseUrl}${videoUrl}`;
       console.log("Formatted video URL:", formattedUrl);
       
       return (
