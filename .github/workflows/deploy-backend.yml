@@ -1,0 +1,160 @@
+name: Deploy Backend to EC2
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'backend/**'
+      - '.github/workflows/deploy-backend.yml'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Deploy to EC2
+      env:
+        PRIVATE_KEY: ${{ secrets.EC2_PRIVATE_KEY }}
+        HOST: ${{ secrets.EC2_HOST }}
+        USER: ${{ secrets.EC2_USER }}
+        GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+        DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      run: |
+        echo "$PRIVATE_KEY" > deploy-key.pem && chmod 600 deploy-key.pem
+        
+        # Copy backend files to EC2
+        scp -o StrictHostKeyChecking=no -i deploy-key.pem -r backend/* ${USER}@${HOST}:~/aive-backend/
+        
+        # Deploy and setup on EC2
+        ssh -o StrictHostKeyChecking=no -i deploy-key.pem ${USER}@${HOST} '
+        set -e
+        
+        echo "=== Starting AIVE Backend Deployment ==="
+        cd ~/aive-backend
+        
+        # Install system dependencies
+        echo "Installing system dependencies..."
+        sudo apt-get update
+        sudo apt-get install -y python3.13 python3.13-venv python3.13-dev ffmpeg postgresql-client nginx
+        
+        # Install UV if not already installed
+        if ! command -v uv &> /dev/null; then
+          echo "Installing UV package manager..."
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          source $HOME/.local/bin/env
+        fi
+        
+        # Ensure UV is in PATH
+        export PATH="$HOME/.local/bin:$PATH"
+        
+        # Create virtual environment and install dependencies
+        echo "Setting up Python environment..."
+        uv venv --python=python3.13
+        source .venv/bin/activate
+        uv sync
+        
+        # Create necessary directories
+        mkdir -p static/{temp,output,audio}
+        
+        # Set up environment variables
+        echo "Setting up environment variables..."
+        cat > .env << EOL
+DATABASE_URL=${{ secrets.DATABASE_URL }}
+GROQ_API_KEY=${{ secrets.GROQ_API_KEY }}
+ENVIRONMENT=production
+DEBUG=false
+ALLOWED_ORIGINS=${{ secrets.ALLOWED_ORIGINS || "http://localhost:3000,https://yourdomain.com" }}
+API_PREFIX=/api
+EOL
+        
+        # Run database migrations
+        echo "Running database migrations..."
+        source .venv/bin/activate
+        alembic upgrade head || echo "No migrations to run"
+        
+        # Set up systemd service
+        echo "Setting up systemd service..."
+        sudo tee /etc/systemd/system/aive-backend.service > /dev/null << EOL
+[Unit]
+Description=AIVE FastAPI Backend
+After=network.target postgresql.service
+
+[Service]
+Type=exec
+User=${USER}
+Group=${USER}
+WorkingDirectory=/home/${USER}/aive-backend
+Environment="PATH=/home/${USER}/aive-backend/.venv/bin:/usr/local/bin:/usr/bin:/bin"
+Environment="PYTHONPATH=/home/${USER}/aive-backend/src"
+ExecStart=/home/${USER}/aive-backend/.venv/bin/uvicorn src.main:app --host 0.0.0.0 --port 8000
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
+EOL
+        
+        # Set up Nginx reverse proxy
+        echo "Setting up Nginx configuration..."
+        sudo tee /etc/nginx/sites-available/aive-backend > /dev/null << EOL
+server {
+    listen 80;
+    server_name ${HOST} ${{ secrets.DOMAIN_NAME || "_" }};
+    
+    client_max_body_size 100M;
+    
+    location / {
+        proxy_pass http://127.0.0.1:8000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade \$http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host \$http_host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
+        proxy_set_header X-Forwarded-Host \$server_name;
+        proxy_buffer_size 128k;
+        proxy_buffers 4 256k;
+        proxy_busy_buffers_size 256k;
+    }
+    
+    location /api/videos {
+        alias /home/${USER}/aive-backend/static/output;
+        expires 30d;
+        add_header Cache-Control "public, immutable";
+    }
+    
+    location /api/audio {
+        alias /home/${USER}/aive-backend/static/audio;
+        expires 30d;
+        add_header Cache-Control "public, immutable";
+    }
+}
+EOL
+        
+        # Enable Nginx site
+        sudo ln -sf /etc/nginx/sites-available/aive-backend /etc/nginx/sites-enabled/
+        sudo rm -f /etc/nginx/sites-enabled/default
+        sudo nginx -t
+        sudo systemctl reload nginx
+        
+        # Start/restart the service
+        echo "Starting AIVE Backend service..."
+        sudo systemctl daemon-reload
+        sudo systemctl enable aive-backend
+        sudo systemctl restart aive-backend
+        
+        # Check service status
+        sleep 5
+        sudo systemctl status aive-backend --no-pager
+        
+        # Test the API
+        echo "Testing API health endpoint..."
+        curl -f http://localhost:8000/health || echo "Health check failed"
+        
+        echo "=== Deployment Complete ==="
+        '
+        
+        rm -f deploy-key.pem
