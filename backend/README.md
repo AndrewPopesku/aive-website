@@ -13,7 +13,7 @@ src/
 ├── render/                  # Render domain (video rendering)
 ├── video_processing/        # Video processing services
 ├── database/                # Database configuration
-└── server_api.py           # FastAPI application entry point
+└── main.py           # FastAPI application entry point
 ```
 
 ### Key Features
