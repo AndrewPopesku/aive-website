@@ -60,14 +60,14 @@ jobs:
         
         # Set up environment variables
         echo "Setting up environment variables..."
-        cat > .env << EOL
-DATABASE_URL=${{ secrets.DATABASE_URL }}
-GROQ_API_KEY=${{ secrets.GROQ_API_KEY }}
-ENVIRONMENT=production
-DEBUG=false
-ALLOWED_ORIGINS=${{ secrets.ALLOWED_ORIGINS || "http://localhost:3000,https://yourdomain.com" }}
-API_PREFIX=/api
-EOL
+        cat > .env <<EOF
+        DATABASE_URL="${{ secrets.DATABASE_URL }}"
+        GROQ_API_KEY="${{ secrets.GROQ_API_KEY }}"
+        ENVIRONMENT=production
+        DEBUG=false
+        ALLOWED_ORIGINS="${{ secrets.ALLOWED_ORIGINS || 'http://localhost:3000,https://yourdomain.com' }}"
+        API_PREFIX=/api
+        EOF
         
         # Run database migrations
         echo "Running database migrations..."
@@ -76,63 +76,63 @@ EOL
         
         # Set up systemd service
         echo "Setting up systemd service..."
-        sudo tee /etc/systemd/system/aive-backend.service > /dev/null << EOL
-[Unit]
-Description=AIVE FastAPI Backend
-After=network.target postgresql.service
-
-[Service]
-Type=exec
-User=${USER}
-Group=${USER}
-WorkingDirectory=/home/${USER}/aive-backend
-Environment="PATH=/home/${USER}/aive-backend/.venv/bin:/usr/local/bin:/usr/bin:/bin"
-Environment="PYTHONPATH=/home/${USER}/aive-backend/src"
-ExecStart=/home/${USER}/aive-backend/.venv/bin/uvicorn src.main:app --host 0.0.0.0 --port 8000
-Restart=always
-RestartSec=10
-
-[Install]
-WantedBy=multi-user.target
-EOL
+        sudo tee /etc/systemd/system/aive-backend.service > /dev/null <<EOF
+        [Unit]
+        Description=AIVE FastAPI Backend
+        After=network.target postgresql.service
+        
+        [Service]
+        Type=exec
+        User=${USER}
+        Group=${USER}
+        WorkingDirectory=/home/${USER}/aive-backend
+        Environment="PATH=/home/${USER}/aive-backend/.venv/bin:/usr/local/bin:/usr/bin:/bin"
+        Environment="PYTHONPATH=/home/${USER}/aive-backend/src"
+        ExecStart=/home/${USER}/aive-backend/.venv/bin/uvicorn src.main:app --host 0.0.0.0 --port 8000
+        Restart=always
+        RestartSec=10
+        
+        [Install]
+        WantedBy=multi-user.target
+        EOF
         
         # Set up Nginx reverse proxy
         echo "Setting up Nginx configuration..."
-        sudo tee /etc/nginx/sites-available/aive-backend > /dev/null << EOL
-server {
-    listen 80;
-    server_name ${HOST} ${{ secrets.DOMAIN_NAME || "_" }};
-    
-    client_max_body_size 100M;
-    
-    location / {
-        proxy_pass http://127.0.0.1:8000;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade \$http_upgrade;
-        proxy_set_header Connection "upgrade";
-        proxy_set_header Host \$http_host;
-        proxy_set_header X-Real-IP \$remote_addr;
-        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto \$scheme;
-        proxy_set_header X-Forwarded-Host \$server_name;
-        proxy_buffer_size 128k;
-        proxy_buffers 4 256k;
-        proxy_busy_buffers_size 256k;
-    }
-    
-    location /api/videos {
-        alias /home/${USER}/aive-backend/static/output;
-        expires 30d;
-        add_header Cache-Control "public, immutable";
-    }
-    
-    location /api/audio {
-        alias /home/${USER}/aive-backend/static/audio;
-        expires 30d;
-        add_header Cache-Control "public, immutable";
-    }
-}
-EOL
+        sudo tee /etc/nginx/sites-available/aive-backend > /dev/null <<EOF
+        server {
+            listen 80;
+            server_name ${HOST} ${{ secrets.DOMAIN_NAME || '_' }};
+            
+            client_max_body_size 100M;
+            
+            location / {
+                proxy_pass http://127.0.0.1:8000;
+                proxy_http_version 1.1;
+                proxy_set_header Upgrade \$http_upgrade;
+                proxy_set_header Connection "upgrade";
+                proxy_set_header Host \$http_host;
+                proxy_set_header X-Real-IP \$remote_addr;
+                proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+                proxy_set_header X-Forwarded-Proto \$scheme;
+                proxy_set_header X-Forwarded-Host \$server_name;
+                proxy_buffer_size 128k;
+                proxy_buffers 4 256k;
+                proxy_busy_buffers_size 256k;
+            }
+            
+            location /api/videos {
+                alias /home/${USER}/aive-backend/static/output;
+                expires 30d;
+                add_header Cache-Control "public, immutable";
+            }
+            
+            location /api/audio {
+                alias /home/${USER}/aive-backend/static/audio;
+                expires 30d;
+                add_header Cache-Control "public, immutable";
+            }
+        }
+        EOF
         
         # Enable Nginx site
         sudo ln -sf /etc/nginx/sites-available/aive-backend /etc/nginx/sites-enabled/
