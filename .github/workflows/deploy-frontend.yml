@@ -42,6 +42,7 @@ jobs:
         working-directory: ./frontend
         env:
           GITHUB_PAGES: true
+          NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
 
       - name: Upload artifact 📡
         uses: actions/upload-pages-artifact@v3
