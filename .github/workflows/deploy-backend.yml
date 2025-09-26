@@ -72,7 +72,7 @@ jobs:
         GROQ_API_KEY="${{ secrets.GROQ_API_KEY }}"
         ENVIRONMENT=production
         DEBUG=false
-        ALLOWED_ORIGINS="${{ secrets.ALLOWED_ORIGINS || 'http://localhost:3000,https://yourdomain.com' }}"
+        ALLOWED_ORIGINS='${{ secrets.ALLOWED_ORIGINS || '["http://localhost:3000", "https://andrewpopesku.github.io", "https://yourdomain.com"]' }}'
         API_PREFIX=/api
         EOF
         
