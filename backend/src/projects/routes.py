@@ -1,19 +1,33 @@
 import os
-from typing import Any, Dict, List
+from typing import Any
 
-from database.session import get_session
-from fastapi import APIRouter, BackgroundTasks, Depends, File, HTTPException, UploadFile, status
+from fastapi import (
+    APIRouter,
+    BackgroundTasks,
+    Depends,
+    File,
+    HTTPException,
+    UploadFile,
+    status,
+)
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from database.session import get_session
 from projects.controller import ProjectController
-from projects.schemas import FootageChoices, MusicResponse, ProjectCreate, ProjectResponse, ProjectUpdate, Sentence
+from projects.schemas import (
+    FootageChoices,
+    MusicResponse,
+    ProjectCreate,
+)
 
 router = APIRouter()
 controller = ProjectController()
 
 
-@router.get("/", response_model=List[Dict[str, Any]])
-async def get_all_projects(skip: int = 0, limit: int = 100, session: AsyncSession = Depends(get_session)):
+@router.get("/", response_model=list[dict[str, Any]])
+async def get_all_projects(
+    skip: int = 0, limit: int = 100, session: AsyncSession = Depends(get_session)
+):
     """Get a list of all projects."""
     projects = await controller.get_entities(session, skip, limit)
 
@@ -26,14 +40,18 @@ async def get_all_projects(skip: int = 0, limit: int = 100, session: AsyncSessio
     return result
 
 
-@router.get("/{project_id}", response_model=Dict[str, Any])
-async def get_project_details(project_id: str, session: AsyncSession = Depends(get_session)):
+@router.get("/{project_id}", response_model=dict[str, Any])
+async def get_project_details(
+    project_id: str, session: AsyncSession = Depends(get_session)
+):
     """Get details for a specific project."""
     return await controller.get_project_with_details(session, project_id)
 
 
-@router.post("/", response_model=Dict[str, Any], status_code=status.HTTP_201_CREATED)
-async def create_project(audio_file: UploadFile = File(...), session: AsyncSession = Depends(get_session)):
+@router.post("/", response_model=dict[str, Any], status_code=status.HTTP_201_CREATED)
+async def create_project(
+    audio_file: UploadFile = File(...), session: AsyncSession = Depends(get_session)
+):
     """Create a new project with audio file upload, transcription, and footage recommendations."""
     import os
     import shutil
@@ -64,13 +82,18 @@ async def create_project(audio_file: UploadFile = File(...), session: AsyncSessi
         sentences_data = await transcribe_audio(str(audio_path))
 
         if not sentences_data:
-            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to transcribe audio")
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Failed to transcribe audio",
+            )
 
         # For each sentence, find recommended footage and set as selected by default
         sentences_create = []
         for sentence_data in sentences_data:
             # Find footage for this sentence
-            footage_url = await find_footage_for_sentence(sentence_data["text"], sentence_data.get("translated_text"))
+            footage_url = await find_footage_for_sentence(
+                sentence_data["text"], sentence_data.get("translated_text")
+            )
 
             # Create default selected footage from recommendation
             selected_footage = None
@@ -85,7 +108,9 @@ async def create_project(audio_file: UploadFile = File(...), session: AsyncSessi
                     category="recommended",
                     mood="neutral",
                     relevance_score=95,
-                    url=str(footage_url),  # Convert to string to avoid HttpUrl serialization issues
+                    url=str(
+                        footage_url
+                    ),  # Convert to string to avoid HttpUrl serialization issues
                 )
 
             # Create sentence object
@@ -103,7 +128,6 @@ async def create_project(audio_file: UploadFile = File(...), session: AsyncSessi
             id=project_id,
             title=f"Project {project_id}",
             audio_file_path=str(audio_path),
-            total_duration=sum(s.end_time - s.start_time for s in sentences_create),
         )
 
         # Create the project
@@ -132,7 +156,9 @@ async def create_project(audio_file: UploadFile = File(...), session: AsyncSessi
                 )
                 music_recs_create.append(music_rec)
 
-            await controller.add_music_recommendations(session, project_id, music_recs_create)
+            await controller.add_music_recommendations(
+                session, project_id, music_recs_create
+            )
 
         # Return project details with sentences and music
         return await controller.get_project_with_details(session, project.id)
@@ -146,19 +172,28 @@ async def create_project(audio_file: UploadFile = File(...), session: AsyncSessi
             raise
 
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Failed to create project: {str(e)}"
-        )
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to create project: {str(e)}",
+        ) from e
 
 
-@router.put("/{project_id}", response_model=Dict[str, Any])
-async def update_project(project_id: str, project_data: Dict[str, Any], session: AsyncSession = Depends(get_session)):
+@router.put("/{project_id}", response_model=dict[str, Any])
+async def update_project(
+    project_id: str,
+    project_data: dict[str, Any],
+    session: AsyncSession = Depends(get_session),
+):
     """Update a project by ID."""
     await controller.update_entity(session, project_id, project_data)
     return await controller.get_project_with_details(session, project_id)
 
 
-@router.patch("/{project_id}", response_model=Dict[str, Any])
-async def patch_project(project_id: str, project_data: Dict[str, Any], session: AsyncSession = Depends(get_session)):
+@router.patch("/{project_id}", response_model=dict[str, Any])
+async def patch_project(
+    project_id: str,
+    project_data: dict[str, Any],
+    session: AsyncSession = Depends(get_session),
+):
     """Partially update a project by ID."""
     await controller.update_entity(session, project_id, project_data)
     return await controller.get_project_with_details(session, project_id)
@@ -173,7 +208,9 @@ async def delete_project(project_id: str, session: AsyncSession = Depends(get_se
 
 @router.post("/{project_id}/footage", response_model=MusicResponse)
 async def submit_footage_choices(
-    project_id: str, footage_choices: FootageChoices, session: AsyncSession = Depends(get_session)
+    project_id: str,
+    footage_choices: FootageChoices,
+    session: AsyncSession = Depends(get_session),
 ):
     """Submit footage choices for sentences and get music recommendations."""
     from projects.schemas import FootageChoiceCreate, MusicRecommendationCreate
@@ -202,13 +239,16 @@ async def submit_footage_choices(
         from projects.schemas import SelectedFootage
 
         selected_footage_obj = SelectedFootage(**selected_footage)
-        await controller.update_sentence_footage(session, choice.sentence_id, selected_footage_obj)
+        await controller.update_sentence_footage(
+            session, choice.sentence_id, selected_footage_obj
+        )
 
     # Create and save footage choices to database
     footage_choices_create = []
     for choice in footage_choices.footage_choices:
         footage_choice_create = FootageChoiceCreate(
-            sentence_id=choice.sentence_id, footage_options=[{"url": choice.footage_url, "selected": True}]
+            sentence_id=choice.sentence_id,
+            footage_options=[{"url": choice.footage_url, "selected": True}],
         )
         footage_choices_create.append(footage_choice_create)
 
@@ -236,14 +276,18 @@ async def submit_footage_choices(
             )
             music_recs_create.append(music_rec)
 
-        await controller.add_music_recommendations(session, project_id, music_recs_create)
+        await controller.add_music_recommendations(
+            session, project_id, music_recs_create
+        )
 
     # Convert music tracks to response format
     from projects.schemas import MusicRecommendation
 
     music_recommendations = []
     for track in music_tracks:
-        music_rec = MusicRecommendation(id=track["id"], name=track["name"], url=track["url"])
+        music_rec = MusicRecommendation(
+            id=track["id"], name=track["name"], url=track["url"]
+        )
         music_recommendations.append(music_rec)
 
     return MusicResponse(project_id=project_id, recommended_music=music_recommendations)
@@ -251,74 +295,69 @@ async def submit_footage_choices(
 
 @router.post("/{project_id}/render", status_code=status.HTTP_202_ACCEPTED)
 async def render_project(
-    project_id: str, background_tasks: BackgroundTasks, session: AsyncSession = Depends(get_session)
+    project_id: str,
+    background_tasks: BackgroundTasks,
+    session: AsyncSession = Depends(get_session),
 ):
     """Start rendering a video for a project."""
-    from base.config import get_settings
     from render.controller import RenderController
-    from render.schemas import RenderRequest, RenderResponse
-    from video_processing.services import find_background_music
+    from render.schemas import RenderRequest
 
     # Create a minimal render request (can be enhanced later)
     render_request = RenderRequest()
     render_controller = RenderController()
-    settings = get_settings()
 
     # Validate project exists and get project data
     project_details = await controller.get_project_with_details(session, project_id)
 
     # Check if all sentences have selected footage
     sentences = project_details["sentences"]
-    if not all(s.get("selected_footage") and s["selected_footage"].get("url") for s in sentences):
+    if not all(
+        s.get("selected_footage") and s["selected_footage"].get("url")
+        for s in sentences
+    ):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Not all sentences have selected footage. Please select footage for all sentences.",
         )
 
     # Create render task
-    render_task = await render_controller.create_render_task(session, project_id, render_request)
+    render_task = await render_controller.create_render_task(
+        session, project_id, render_request
+    )
 
     # Define the background rendering function
     async def render_video_task():
         # Create a new session for the background task
-        from database.session import get_async_session
+        from database.session import async_session_factory
 
-        async with get_async_session() as bg_session:
+        async with async_session_factory() as bg_session:
             try:
                 # Update status to processing
-                await render_controller.update_render_status(bg_session, render_task.id, "processing", progress=10)
+                await render_controller.update_render_status(
+                    bg_session, render_task.id, "processing", progress=10
+                )
 
                 # Get audio file path from project
                 audio_file_path = project_details["audio_file_path"]
                 if not audio_file_path or not os.path.exists(audio_file_path):
                     await render_controller.update_render_status(
-                        bg_session, render_task.id, "failed", error_message="Audio file not found"
+                        bg_session,
+                        render_task.id,
+                        "failed",
+                        error_message="Audio file not found",
                     )
                     return
 
                 # Update progress
-                await render_controller.update_render_status(bg_session, render_task.id, "processing", progress=25)
-
-                # Find background music from local directory or recommendations
-                music_file_path = None
-                music_recommendations = project_details.get("music_recommendations", [])
-
-                if music_recommendations:
-                    # Use the first music recommendation
-                    music_file_path = music_recommendations[0].get("url")
-                else:
-                    # Find music from local static/audio directory
-                    music_tracks = await find_background_music([])
-                    if music_tracks:
-                        music_file_path = music_tracks[0]["url"]
+                await render_controller.update_render_status(
+                    bg_session, render_task.id, "processing", progress=25
+                )
 
                 # Update progress
-                await render_controller.update_render_status(bg_session, render_task.id, "processing", progress=40)
-
-                # For now, just simulate video rendering
-                import asyncio
-
-                await asyncio.sleep(5)  # Simulate processing time
+                await render_controller.update_render_status(
+                    bg_session, render_task.id, "processing", progress=40
+                )
 
                 # Create a mock video URL (replace with actual rendering later)
                 output_filename = f"{project_id}_final_video.mp4"
@@ -326,17 +365,27 @@ async def render_project(
 
                 # Update status to complete
                 await render_controller.update_render_status(
-                    bg_session, render_task.id, "complete", progress=100, video_url=relative_path
+                    bg_session,
+                    render_task.id,
+                    "complete",
+                    progress=100,
+                    video_url=relative_path,
                 )
 
                 # Update project with video URL
-                await controller.update_entity(bg_session, project_id, {"video_url": relative_path})
+                await controller.update_entity(
+                    bg_session, project_id, {"video_url": relative_path}
+                )
 
             except Exception as e:
                 import logging
 
-                logging.getLogger(__name__).error(f"Error in render task {render_task.id}: {str(e)}")
-                await render_controller.update_render_status(bg_session, render_task.id, "failed", error_message=str(e))
+                logging.getLogger(__name__).error(
+                    f"Error in render task {render_task.id}: {str(e)}"
+                )
+                await render_controller.update_render_status(
+                    bg_session, render_task.id, "failed", error_message=str(e)
+                )
 
     # Add the rendering task to background tasks
     background_tasks.add_task(render_video_task)
@@ -350,7 +399,9 @@ async def render_project(
 
 
 @router.get("/render/status/{task_id}")
-async def get_project_render_status(task_id: str, session: AsyncSession = Depends(get_session)):
+async def get_project_render_status(
+    task_id: str, session: AsyncSession = Depends(get_session)
+):
     """Get the status of a render task (project-scoped route)."""
     from render.controller import RenderController
 

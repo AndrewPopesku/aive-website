@@ -19,6 +19,7 @@ dependencies = [
     "python-jose[cryptography]>=3.3.0",
     "uuid>=1.30",
     "pydantic>=2.11.9",
+    "black>=25.9.0",
 ]
 
 [dependency-groups]

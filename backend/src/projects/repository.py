@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -14,9 +14,9 @@ class ProjectRepository(BaseRepository[Project]):
     def __init__(self):
         super().__init__(Project)
 
-    async def get_by_title(self, session: AsyncSession, title: str) -> Optional[Project]:
+    async def get_by_title(self, session: AsyncSession, title: str) -> Project | None:
         """Get a project by title."""
-        statement = select(self.model).where(self.model.title == title)
+        statement = select(self.model).where(self.model.title == title)  # type: ignore
         result = await session.execute(statement)
         return result.scalar_one_or_none()
 
@@ -27,23 +27,33 @@ class SentenceRepository(BaseRepository[Sentence]):
     def __init__(self):
         super().__init__(Sentence)
 
-    async def get_by_project_id(self, session: AsyncSession, project_id: str) -> List[Sentence]:
+    async def get_by_project_id(
+        self, session: AsyncSession, project_id: str
+    ) -> list[Sentence]:
         """Get all sentences for a specific project."""
-        statement = select(self.model).where(self.model.project_id == project_id)
+        statement = select(self.model).where(self.model.project_id == project_id)  # type: ignore
         result = await session.execute(statement)
-        return result.scalars().all()
+        return list(result.scalars().all())
 
     async def create_multiple(
-        self, session: AsyncSession, project_id: str, sentences_data: List[Dict[str, Any]]
-    ) -> List[Sentence]:
+        self,
+        session: AsyncSession,
+        project_id: str,
+        sentences_data: list[dict[str, Any]],
+    ) -> list[Sentence]:
         """Create multiple sentences for a project."""
         sentences = []
         for sentence_data in sentences_data:
             # Convert selected_footage to JSON if it exists
             selected_footage_json = None
-            if "selected_footage" in sentence_data and sentence_data["selected_footage"]:
+            if (
+                "selected_footage" in sentence_data
+                and sentence_data["selected_footage"]
+            ):
                 if isinstance(sentence_data["selected_footage"], SelectedFootage):
-                    selected_footage_dict = sentence_data["selected_footage"].model_dump()
+                    selected_footage_dict = sentence_data[
+                        "selected_footage"
+                    ].model_dump()
                     # Convert HttpUrl to string for JSON serialization
                     if "url" in selected_footage_dict:
                         selected_footage_dict["url"] = str(selected_footage_dict["url"])
@@ -51,7 +61,11 @@ class SentenceRepository(BaseRepository[Sentence]):
                 else:
                     selected_footage_json = sentence_data["selected_footage"]
 
-            sentence_dict = {**sentence_data, "project_id": project_id, "selected_footage": selected_footage_json}
+            sentence_dict = {
+                **sentence_data,
+                "project_id": project_id,
+                "selected_footage": selected_footage_json,
+            }
 
             sentence = Sentence(**sentence_dict)
             sentences.append(sentence)
@@ -65,7 +79,7 @@ class SentenceRepository(BaseRepository[Sentence]):
 
     async def update_selected_footage(
         self, session: AsyncSession, sentence_id: str, selected_footage: SelectedFootage
-    ) -> Optional[Sentence]:
+    ) -> Sentence | None:
         """Update the selected footage for a sentence."""
         sentence = await self.get(session, sentence_id)
         if not sentence:
@@ -88,21 +102,28 @@ class FootageChoiceRepository(BaseRepository[FootageChoice]):
     def __init__(self):
         super().__init__(FootageChoice)
 
-    async def get_by_project_id(self, session: AsyncSession, project_id: str) -> List[FootageChoice]:
+    async def get_by_project_id(
+        self, session: AsyncSession, project_id: str
+    ) -> list[FootageChoice]:
         """Get all footage choices for a specific project."""
-        statement = select(self.model).where(self.model.project_id == project_id)
+        statement = select(self.model).where(self.model.project_id == project_id)  # type: ignore
         result = await session.execute(statement)
-        return result.scalars().all()
+        return list(result.scalars().all())
 
-    async def get_by_sentence_id(self, session: AsyncSession, sentence_id: str) -> Optional[FootageChoice]:
+    async def get_by_sentence_id(
+        self, session: AsyncSession, sentence_id: str
+    ) -> FootageChoice | None:
         """Get footage choices for a specific sentence."""
-        statement = select(self.model).where(self.model.sentence_id == sentence_id)
+        statement = select(self.model).where(self.model.sentence_id == sentence_id)  # type: ignore
         result = await session.execute(statement)
         return result.scalar_one_or_none()
 
     async def create_multiple(
-        self, session: AsyncSession, project_id: str, footage_choices_data: List[Dict[str, Any]]
-    ) -> List[FootageChoice]:
+        self,
+        session: AsyncSession,
+        project_id: str,
+        footage_choices_data: list[dict[str, Any]],
+    ) -> list[FootageChoice]:
         """Create multiple footage choices for a project."""
         choices = []
         for choice_data in footage_choices_data:
@@ -124,15 +145,20 @@ class MusicRecommendationRepository(BaseRepository[MusicRecommendation]):
     def __init__(self):
         super().__init__(MusicRecommendation)
 
-    async def get_by_project_id(self, session: AsyncSession, project_id: str) -> List[MusicRecommendation]:
+    async def get_by_project_id(
+        self, session: AsyncSession, project_id: str
+    ) -> list[MusicRecommendation]:
         """Get all music recommendations for a specific project."""
-        statement = select(self.model).where(self.model.project_id == project_id)
+        statement = select(self.model).where(self.model.project_id == project_id)  # type: ignore
         result = await session.execute(statement)
-        return result.scalars().all()
+        return list(result.scalars().all())
 
     async def create_multiple(
-        self, session: AsyncSession, project_id: str, recommendations_data: List[Dict[str, Any]]
-    ) -> List[MusicRecommendation]:
+        self,
+        session: AsyncSession,
+        project_id: str,
+        recommendations_data: list[dict[str, Any]],
+    ) -> list[MusicRecommendation]:
         """Create multiple music recommendations for a project."""
         recommendations = []
         for rec_data in recommendations_data:

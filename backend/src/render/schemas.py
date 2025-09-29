@@ -1,5 +1,4 @@
 from datetime import datetime
-from typing import Optional
 
 from pydantic import BaseModel, Field
 
@@ -19,17 +18,17 @@ class RenderTaskCreate(RenderTaskBase):
 
     id: str = Field(default_factory=lambda: generate_id("task"))
     project_id: str
-    output_file_path: Optional[str] = None
-    error_message: Optional[str] = None
+    output_file_path: str | None = None
+    error_message: str | None = None
 
 
 class RenderTaskUpdate(BaseModel):
     """Schema for updating a render task."""
 
-    status: Optional[str] = None
-    progress: Optional[int] = None
-    output_file_path: Optional[str] = None
-    error_message: Optional[str] = None
+    status: str | None = None
+    progress: int | None = None
+    output_file_path: str | None = None
+    error_message: str | None = None
 
 
 class RenderTaskResponse(RenderTaskBase):
@@ -37,8 +36,8 @@ class RenderTaskResponse(RenderTaskBase):
 
     id: str
     project_id: str
-    output_file_path: Optional[str] = None
-    error_message: Optional[str] = None
+    output_file_path: str | None = None
+    error_message: str | None = None
     created_at: datetime
     updated_at: datetime
 
@@ -66,6 +65,6 @@ class RenderStatusResponse(BaseModel):
     """Response schema for render status queries."""
 
     status: str
-    video_url: Optional[str] = None
-    error: Optional[str] = None
-    progress: Optional[int] = None
+    video_url: str | None = None
+    error: str | None = None
+    progress: int | None = None

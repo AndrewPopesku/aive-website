@@ -2,7 +2,7 @@ import asyncio
 import logging
 import os
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import httpx
 
@@ -12,10 +12,8 @@ settings = get_settings()
 logger = logging.getLogger(__name__)
 
 
-async def transcribe_audio(audio_path: str) -> List[Dict[str, Any]]:
-    """
-    Transcribe audio file using Groq API (Whisper model) and return sentences with timestamps.
-    """
+async def transcribe_audio(audio_path: str) -> list[dict[str, Any]]:
+    """Transcribe audio file using Groq API (Whisper model) and return sentences with timestamps."""
     try:
         headers = {"Authorization": f"Bearer {settings.groq_api_key}"}
 
@@ -44,19 +42,27 @@ async def transcribe_audio(audio_path: str) -> List[Dict[str, Any]]:
                 translation_tasks = []
 
                 for segment in result.get("segments", []):
-                    sentence_data = {"text": segment["text"], "start": segment["start"], "end": segment["end"]}
+                    sentence_data = {
+                        "text": segment["text"],
+                        "start": segment["start"],
+                        "end": segment["end"],
+                    }
                     sentences.append(sentence_data)
                     translation_tasks.append(translate_text(segment["text"]))
 
                 # Execute translations concurrently
                 if sentences:
-                    translations = await asyncio.gather(*translation_tasks, return_exceptions=True)
+                    translations = await asyncio.gather(
+                        *translation_tasks, return_exceptions=True
+                    )
 
                     for i, translation in enumerate(translations):
                         if not isinstance(translation, Exception):
                             sentences[i]["translated_text"] = translation
                         else:
-                            sentences[i]["translated_text"] = sentences[i]["text"]  # Fallback to original
+                            sentences[i]["translated_text"] = sentences[i][
+                                "text"
+                            ]  # Fallback to original
 
                 return sentences
 
@@ -66,14 +72,15 @@ async def transcribe_audio(audio_path: str) -> List[Dict[str, Any]]:
 
 
 async def translate_text(text: str) -> str:
-    """
-    Translate text to English using Groq API for better search results.
-    """
+    """Translate text to English using Groq API for better search results."""
     try:
         if not text.strip():
             return text
 
-        headers = {"Authorization": f"Bearer {settings.groq_api_key}", "Content-Type": "application/json"}
+        headers = {
+            "Authorization": f"Bearer {settings.groq_api_key}",
+            "Content-Type": "application/json",
+        }
 
         prompt = f"Translate the following text to English. Only respond with the translation, nothing else:\n\n{text}"
 
@@ -92,7 +99,10 @@ async def translate_text(text: str) -> str:
 
         async with httpx.AsyncClient() as client:
             response = await client.post(
-                f"{settings.groq_api_url}/chat/completions", headers=headers, json=data, timeout=30.0
+                f"{settings.groq_api_url}/chat/completions",
+                headers=headers,
+                json=data,
+                timeout=30.0,
             )
 
             if response.status_code != 200:
@@ -100,13 +110,20 @@ async def translate_text(text: str) -> str:
                 return text
 
             result = response.json()
-            translation = result.get("choices", [{}])[0].get("message", {}).get("content", "").strip()
+            translation = (
+                result.get("choices", [{}])[0]
+                .get("message", {})
+                .get("content", "")
+                .strip()
+            )
 
             if not translation:
                 logger.warning(f"Empty translation result for: {text}")
                 return text
 
-            logger.info(f"Successfully translated: '{text[:30]}...' → '{translation[:30]}...'")
+            logger.info(
+                f"Successfully translated: '{text[:30]}...' → '{translation[:30]}...'"
+            )
             return translation
 
     except Exception as e:
@@ -114,10 +131,10 @@ async def translate_text(text: str) -> str:
         return text
 
 
-async def find_footage_for_sentence(text: str, translated_text: Optional[str] = None) -> str:
-    """
-    Find relevant video footage for a sentence using Pexels API.
-    """
+async def find_footage_for_sentence(
+    text: str, translated_text: str | None = None
+) -> str:
+    """Find relevant video footage for a sentence using Pexels API."""
     try:
         # Use provided translation or translate on-demand
         if not translated_text:
@@ -126,13 +143,31 @@ async def find_footage_for_sentence(text: str, translated_text: Optional[str] = 
         # Extract keywords from the translated sentence
         keywords = translated_text.lower().split()
         # Filter out common words
-        common_words = {"the", "a", "an", "and", "or", "but", "is", "are", "was", "were", "in", "on", "at", "to", "for"}
+        common_words = {
+            "the",
+            "a",
+            "an",
+            "and",
+            "or",
+            "but",
+            "is",
+            "are",
+            "was",
+            "were",
+            "in",
+            "on",
+            "at",
+            "to",
+            "for",
+        }
         keywords = [word for word in keywords if word not in common_words]
 
         # Use the first few keywords for the search
         search_query = " ".join(keywords[:3]) if keywords else "general"
 
-        logger.info(f"Searching footage with query: '{search_query}' (translated from: '{text}')")
+        logger.info(
+            f"Searching footage with query: '{search_query}' (translated from: '{text}')"
+        )
 
         headers = {"Authorization": settings.pexels_api_key}
 
@@ -154,7 +189,9 @@ async def find_footage_for_sentence(text: str, translated_text: Optional[str] = 
 
             # Get the video file with the highest quality but reasonable size
             video_files = sorted(
-                videos[0].get("video_files", []), key=lambda x: (x.get("width", 0) * x.get("height", 0)), reverse=True
+                videos[0].get("video_files", []),
+                key=lambda x: (x.get("width", 0) * x.get("height", 0)),
+                reverse=True,
             )
 
             if video_files:
@@ -170,10 +207,10 @@ async def find_footage_for_sentence(text: str, translated_text: Optional[str] = 
         return ""
 
 
-async def find_background_music(sentence_texts: Optional[List[str]] = None) -> List[Dict[str, Any]]:
-    """
-    Find background music from the local audio directory.
-    """
+async def find_background_music(
+    sentence_texts: list[str] | None = None,
+) -> list[dict[str, Any]]:
+    """Find background music from the local audio directory."""
     try:
         # Get all available music files from the audio directory
         music_files = list(settings.audio_dir.glob("*.mp3"))
@@ -192,7 +229,9 @@ async def find_background_music(sentence_texts: Optional[List[str]] = None) -> L
             relative_path = music_file.relative_to(settings.audio_dir)
             audio_url = f"/api/audio/{relative_path}"
 
-            music_recommendations.append({"id": music_id, "name": name, "url": audio_url})
+            music_recommendations.append(
+                {"id": music_id, "name": name, "url": audio_url}
+            )
 
             logger.info(f"Added music file: {name} at {music_file}")
 
@@ -203,9 +242,7 @@ async def find_background_music(sentence_texts: Optional[List[str]] = None) -> L
 
 
 async def download_file(url: str, destination: Path) -> bool:
-    """
-    Download a file from URL to destination path.
-    """
+    """Download a file from URL to destination path."""
     try:
         async with httpx.AsyncClient() as client:
             response = await client.get(url, timeout=60.0)

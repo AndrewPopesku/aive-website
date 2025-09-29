@@ -58,7 +58,9 @@ class TestProjectsAPI:
         assert len(all_projects) == 1
 
         # Test update
-        updated_project = await repo.update(test_session, "test-proj-1", {"description": "Updated description"})
+        updated_project = await repo.update(
+            test_session, "test-proj-1", {"description": "Updated description"}
+        )
         assert updated_project.description == "Updated description"
 
         # Test exists
@@ -86,7 +88,9 @@ class TestProjectController:
         controller = ProjectController()
 
         project_data = ProjectCreate(
-            title="Test Project", description="Test description", audio_file_path="/tmp/test.mp3"
+            title="Test Project",
+            description="Test description",
+            audio_file_path="/tmp/test.mp3",
         )
 
         project = await controller.create_project_with_audio(test_session, project_data)
@@ -103,7 +107,9 @@ class TestProjectController:
 
         # Create a project first
         project_data = ProjectCreate(
-            title="Test Project", description="Test description", audio_file_path="/tmp/test.mp3"
+            title="Test Project",
+            description="Test description",
+            audio_file_path="/tmp/test.mp3",
         )
 
         project = await controller.create_project_with_audio(test_session, project_data)

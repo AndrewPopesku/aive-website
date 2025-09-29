@@ -3,7 +3,7 @@ import logging
 import os
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import httpx
 
@@ -75,7 +75,9 @@ async def download_video_file(url: str, destination: Path) -> bool:
 class VideoEditor:
     """Video editor for creating final rendered videos from project data."""
 
-    def __init__(self, temp_dir: Optional[Path] = None, output_dir: Optional[Path] = None):
+    def __init__(
+        self, temp_dir: Path | None = None, output_dir: Path | None = None
+    ) -> None:
         self.temp_dir = temp_dir or settings.temp_dir
         self.output_dir = output_dir or settings.output_dir
 
@@ -85,10 +87,10 @@ class VideoEditor:
 
     async def render_project_video(
         self,
-        project_data: Dict[str, Any],
+        project_data: dict[str, Any],
         audio_file_path: str,
-        music_file_path: Optional[str] = None,
-        output_filename: Optional[str] = None,
+        music_file_path: str | None = None,
+        output_filename: str | None = None,
     ) -> str:
         """Render a complete video from project data."""
         if not MOVIEPY_AVAILABLE:
@@ -146,7 +148,9 @@ class VideoEditor:
 
                 # Combine voice and music
                 if final_video.audio:
-                    composite_audio = CompositeAudioClip([final_video.audio, music_audio])
+                    composite_audio = CompositeAudioClip(
+                        [final_video.audio, music_audio]
+                    )
                     final_video = final_video.with_audio(composite_audio)
                 else:
                     final_video = final_video.with_audio(music_audio)
@@ -172,7 +176,7 @@ class VideoEditor:
             logger.error(f"Error rendering video: {str(e)}")
             raise
 
-    async def _download_footage(self, sentences: List[Dict[str, Any]]) -> None:
+    async def _download_footage(self, sentences: list[dict[str, Any]]) -> None:
         """Download all footage files for the sentences."""
         download_tasks = []
 
@@ -201,18 +205,24 @@ class VideoEditor:
         # Download all footage concurrently
         if download_tasks:
             results = await asyncio.gather(*download_tasks, return_exceptions=True)
-            failed_downloads = sum(1 for result in results if not result or isinstance(result, Exception))
+            failed_downloads = sum(
+                1 for result in results if not result or isinstance(result, Exception)
+            )
             if failed_downloads > 0:
                 logger.warning(f"{failed_downloads} footage downloads failed")
 
-    def _create_video_clips(self, sentences: List[Dict[str, Any]]) -> List[VideoFileClip]:
+    def _create_video_clips(
+        self, sentences: list[dict[str, Any]]
+    ) -> list[VideoFileClip]:
         """Create video clips with subtitles for each sentence."""
         clips = []
 
         for sentence in sentences:
             local_footage_path = sentence.get("_local_footage_path")
             if not local_footage_path or not os.path.exists(local_footage_path):
-                logger.warning(f"Local footage not found for sentence: {sentence.get('text', 'Unknown')}")
+                logger.warning(
+                    f"Local footage not found for sentence: {sentence.get('text', 'Unknown')}"
+                )
                 continue
 
             try:
@@ -266,17 +276,19 @@ class VideoEditor:
                 clips.append(video_clip)
 
             except Exception as e:
-                logger.error(f"Error creating clip for sentence '{sentence.get('text', 'Unknown')}': {str(e)}")
+                logger.error(
+                    f"Error creating clip for sentence '{sentence.get('text', 'Unknown')}': {str(e)}"
+                )
                 continue
 
         return clips
 
 
 async def render_project_video(
-    project_data: Dict[str, Any],
+    project_data: dict[str, Any],
     audio_file_path: str,
-    music_file_path: Optional[str] = None,
-    output_filename: Optional[str] = None,
+    music_file_path: str | None = None,
+    output_filename: str | None = None,
 ) -> str:
     """Convenience function to render a project video."""
     editor = VideoEditor()

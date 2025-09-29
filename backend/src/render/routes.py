@@ -1,12 +1,12 @@
 import logging
 import os
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any
 
-from database.session import get_session
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from database.session import get_session
 from render.controller import RenderController
 from render.schemas import RenderRequest, RenderResponse, RenderStatusResponse
 
@@ -15,14 +15,18 @@ controller = RenderController()
 logger = logging.getLogger(__name__)
 
 
-@router.post("/{project_id}/render", response_model=RenderResponse, status_code=status.HTTP_202_ACCEPTED)
+@router.post(
+    "/{project_id}/render",
+    response_model=RenderResponse,
+    status_code=status.HTTP_202_ACCEPTED,
+)
 async def render_project(
     project_id: str,
     render_request: RenderRequest,
     background_tasks: BackgroundTasks,
     request: Request,
     session: AsyncSession = Depends(get_session),
-):
+) -> RenderResponse:
     """Start rendering a video for a project."""
     import asyncio
 
@@ -35,39 +39,53 @@ async def render_project(
     project_controller = ProjectController()
 
     # Validate project exists and get project data
-    project_details = await project_controller.get_project_with_details(session, project_id)
+    project_details = await project_controller.get_project_with_details(
+        session, project_id
+    )
 
     # Check if all sentences have selected footage
     sentences = project_details["sentences"]
-    if not all(s.get("selected_footage") and s["selected_footage"].get("url") for s in sentences):
+    if not all(
+        s.get("selected_footage") and s["selected_footage"].get("url")
+        for s in sentences
+    ):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Not all sentences have selected footage. Please select footage for all sentences.",
         )
 
     # Create render task
-    render_task = await controller.create_render_task(session, project_id, render_request)
+    render_task = await controller.create_render_task(
+        session, project_id, render_request
+    )
 
     # Define the background rendering function
-    async def render_video_task():
+    async def render_video_task() -> None:
         # Create a new session for the background task
-        from database.session import get_async_session
+        from database.session import async_session_factory
 
-        async with get_async_session() as bg_session:
+        async with async_session_factory() as bg_session:
             try:
                 # Update status to processing
-                await controller.update_render_status(bg_session, render_task.id, "processing", progress=10)
+                await controller.update_render_status(
+                    bg_session, render_task.id, "processing", progress=10
+                )
 
                 # Get audio file path from project
                 audio_file_path = project_details["audio_file_path"]
                 if not audio_file_path or not os.path.exists(audio_file_path):
                     await controller.update_render_status(
-                        bg_session, render_task.id, "failed", error_message="Audio file not found"
+                        bg_session,
+                        render_task.id,
+                        "failed",
+                        error_message="Audio file not found",
                     )
                     return
 
                 # Update progress
-                await controller.update_render_status(bg_session, render_task.id, "processing", progress=25)
+                await controller.update_render_status(
+                    bg_session, render_task.id, "processing", progress=25
+                )
 
                 # Find background music if not provided
                 music_file_path = None
@@ -83,7 +101,9 @@ async def render_project(
                         music_file_path = music_tracks[0]["url"]
 
                 # Update progress
-                await controller.update_render_status(bg_session, render_task.id, "processing", progress=40)
+                await controller.update_render_status(
+                    bg_session, render_task.id, "processing", progress=40
+                )
 
                 # Render the video
                 output_filename = f"{project_id}_final_video.mp4"
@@ -100,15 +120,23 @@ async def render_project(
 
                 # Update status to complete
                 await controller.update_render_status(
-                    bg_session, render_task.id, "complete", progress=100, video_url=relative_path
+                    bg_session,
+                    render_task.id,
+                    "complete",
+                    progress=100,
+                    video_url=relative_path,
                 )
 
                 # Update project with video URL
-                await project_controller.update_entity(bg_session, project_id, {"video_url": relative_path})
+                await project_controller.update_entity(
+                    bg_session, project_id, {"video_url": relative_path}
+                )
 
             except Exception as e:
                 logger.error(f"Error in render task {render_task.id}: {str(e)}")
-                await controller.update_render_status(bg_session, render_task.id, "failed", error_message=str(e))
+                await controller.update_render_status(
+                    bg_session, render_task.id, "failed", error_message=str(e)
+                )
 
     # Add the rendering task to background tasks
     background_tasks.add_task(render_video_task)
@@ -121,7 +149,9 @@ async def render_project(
 
 
 @router.get("/status/{task_id}", response_model=RenderStatusResponse)
-async def get_render_status(task_id: str, session: AsyncSession = Depends(get_session)):
+async def get_render_status(
+    task_id: str, session: AsyncSession = Depends(get_session)
+) -> RenderStatusResponse:
     """Get the status of a render task."""
     status_info = await controller.get_render_status(session, task_id)
 
@@ -133,16 +163,20 @@ async def get_render_status(task_id: str, session: AsyncSession = Depends(get_se
     )
 
 
-@router.get("/{project_id}/tasks", response_model=Dict[str, Any])
-async def get_project_render_tasks(project_id: str, session: AsyncSession = Depends(get_session)):
+@router.get("/{project_id}/tasks", response_model=dict[str, Any])
+async def get_project_render_tasks(
+    project_id: str, session: AsyncSession = Depends(get_session)
+) -> dict[str, Any]:
     """Get all render tasks for a project."""
     return await controller.get_project_render_tasks(session, project_id)
 
 
 @router.put("/status/{task_id}")
 async def update_render_status(
-    task_id: str, status_update: Dict[str, Any], session: AsyncSession = Depends(get_session)
-):
+    task_id: str,
+    status_update: dict[str, Any],
+    session: AsyncSession = Depends(get_session),
+) -> dict[str, str]:
     """Update render task status (internal endpoint)."""
     updated_task = await controller.update_render_status(
         session=session,
@@ -154,6 +188,9 @@ async def update_render_status(
     )
 
     if not updated_task:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Render task with ID {task_id} not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Render task with ID {task_id} not found",
+        )
 
     return {"message": "Render task status updated successfully"}

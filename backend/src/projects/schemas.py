@@ -1,12 +1,12 @@
 import uuid
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any
 
-from pydantic import BaseModel, Field, HttpUrl
+from pydantic import BaseModel, Field
 
 
 def generate_id(prefix: str = "") -> str:
-    """Generate unique IDs with optional prefix."""
+    """Generate unique IDs with prefix."""
     return f"{prefix}-{str(uuid.uuid4())}"
 
 
@@ -19,7 +19,7 @@ class SelectedFootage(BaseModel):
     description: str
     thumbnail: str
     duration: float
-    tags: List[str]
+    tags: list[str]
     category: str
     mood: str
     relevance_score: int
@@ -31,7 +31,7 @@ class ProjectBase(BaseModel):
     """Base project schema."""
 
     title: str
-    description: Optional[str] = None
+    description: str | None = None
 
 
 class ProjectCreate(ProjectBase):
@@ -44,21 +44,21 @@ class ProjectCreate(ProjectBase):
 class ProjectUpdate(BaseModel):
     """Schema for updating a project."""
 
-    title: Optional[str] = None
-    description: Optional[str] = None
-    total_duration: Optional[float] = None
-    overall_mood: Optional[str] = None
-    video_url: Optional[str] = None
+    title: str | None = None
+    description: str | None = None
+    total_duration: float | None = None
+    overall_mood: str | None = None
+    video_url: str | None = None
 
 
 class ProjectResponse(ProjectBase):
     """Schema for project responses."""
 
     id: str
-    audio_file_path: Optional[str] = None
-    total_duration: Optional[float] = None
-    overall_mood: Optional[str] = None
-    video_url: Optional[str] = None
+    audio_file_path: str | None = None
+    total_duration: float | None = None
+    overall_mood: str | None = None
+    video_url: str | None = None
     created_at: datetime
     updated_at: datetime
 
@@ -71,7 +71,7 @@ class SentenceBase(BaseModel):
     """Base sentence schema."""
 
     text: str
-    translated_text: Optional[str] = None
+    translated_text: str | None = None
     start_time: float
     end_time: float
 
@@ -79,18 +79,18 @@ class SentenceBase(BaseModel):
 class SentenceCreate(SentenceBase):
     """Schema for creating a sentence."""
 
-    id: Optional[str] = Field(default_factory=lambda: generate_id("sent"))
-    selected_footage: Optional[SelectedFootage] = None
+    id: str | None = Field(default_factory=lambda: generate_id("sent"))
+    selected_footage: SelectedFootage | None = None
 
 
 class SentenceUpdate(BaseModel):
     """Schema for updating a sentence."""
 
-    text: Optional[str] = None
-    translated_text: Optional[str] = None
-    start_time: Optional[float] = None
-    end_time: Optional[float] = None
-    selected_footage: Optional[SelectedFootage] = None
+    text: str | None = None
+    translated_text: str | None = None
+    start_time: float | None = None
+    end_time: float | None = None
+    selected_footage: SelectedFootage | None = None
 
 
 class SentenceResponse(SentenceBase):
@@ -98,7 +98,7 @@ class SentenceResponse(SentenceBase):
 
     id: str
     project_id: str
-    selected_footage: Optional[Dict[str, Any]] = None
+    selected_footage: dict[str, Any] | None = None
 
     class Config:
         from_attributes = True
@@ -114,8 +114,8 @@ class FootageChoiceBase(BaseModel):
 class FootageChoiceCreate(FootageChoiceBase):
     """Schema for creating footage choices."""
 
-    id: Optional[str] = Field(default_factory=lambda: generate_id("foot"))
-    footage_options: List[Dict[str, Any]]
+    id: str | None = Field(default_factory=lambda: generate_id("foot"))
+    footage_options: list[dict[str, Any]]
 
 
 class FootageChoiceResponse(FootageChoiceBase):
@@ -123,7 +123,7 @@ class FootageChoiceResponse(FootageChoiceBase):
 
     id: str
     project_id: str
-    footage_options: List[Dict[str, Any]]
+    footage_options: list[dict[str, Any]]
 
     class Config:
         from_attributes = True
@@ -135,17 +135,17 @@ class MusicRecommendationBase(BaseModel):
 
     title: str
     artist: str
-    genre: Optional[str] = None
-    mood: Optional[str] = None
-    energy_level: Optional[int] = None
+    genre: str | None = None
+    mood: str | None = None
+    energy_level: int | None = None
     url: str
-    duration: Optional[float] = None
+    duration: float | None = None
 
 
 class MusicRecommendationCreate(MusicRecommendationBase):
     """Schema for creating music recommendations."""
 
-    id: Optional[str] = Field(default_factory=lambda: generate_id("music"))
+    id: str | None = Field(default_factory=lambda: generate_id("music"))
 
 
 class MusicRecommendationResponse(MusicRecommendationBase):
@@ -164,11 +164,11 @@ class Sentence(BaseModel):
 
     sentence_id: str = Field(default_factory=lambda: generate_id("sent"))
     text: str
-    translated_text: Optional[str] = None
+    translated_text: str | None = None
     start: float
     end: float
-    recommended_footage_url: Optional[str] = None
-    selected_footage: Optional[SelectedFootage] = None
+    recommended_footage_url: str | None = None
+    selected_footage: SelectedFootage | None = None
 
 
 class FootageChoice(BaseModel):
@@ -181,7 +181,7 @@ class FootageChoice(BaseModel):
 class FootageChoices(BaseModel):
     """Legacy footage choices collection."""
 
-    footage_choices: List[FootageChoice]
+    footage_choices: list[FootageChoice]
 
 
 class MusicRecommendation(BaseModel):
@@ -197,11 +197,11 @@ class ProjectResponseLegacy(BaseModel):
     """Legacy project response schema."""
 
     project_id: str
-    sentences: List[Sentence]
+    sentences: list[Sentence]
 
 
 class MusicResponse(BaseModel):
     """Music recommendation response."""
 
     project_id: str
-    recommended_music: List[MusicRecommendation]
+    recommended_music: list[MusicRecommendation]

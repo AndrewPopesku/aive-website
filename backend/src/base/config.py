@@ -8,7 +8,9 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     """Application settings configuration."""
 
-    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", case_sensitive=False, extra="ignore")
+    model_config = SettingsConfigDict(
+        env_file=".env", env_file_encoding="utf-8", case_sensitive=False, extra="ignore"
+    )
 
     # Application Configuration
     environment: str = Field(default="development", alias="ENVIRONMENT")
@@ -16,10 +18,16 @@ class Settings(BaseSettings):
     api_prefix: str = Field(default="/api/v1", alias="API_PREFIX")
 
     # Database
-    database_url: str = Field(default="postgresql+asyncpg://user:password@localhost:5432/aive_db", alias="DATABASE_URL")
+    database_url: str = Field(
+        default="postgresql+asyncpg://user:password@localhost:5432/aive_db",
+        alias="DATABASE_URL",
+    )
 
     # Authentication
-    jwt_secret_key: str = Field(default="your-super-secret-key-change-this-in-production", alias="JWT_SECRET_KEY")
+    jwt_secret_key: str = Field(
+        default="your-super-secret-key-change-this-in-production",
+        alias="JWT_SECRET_KEY",
+    )
     jwt_algorithm: str = Field(default="HS256", alias="JWT_ALGORITHM")
     jwt_expire_minutes: int = Field(default=30, alias="JWT_EXPIRE_MINUTES")
 
@@ -31,16 +39,24 @@ class Settings(BaseSettings):
     # File Storage
     max_upload_size: int = Field(default=104857600, alias="MAX_UPLOAD_SIZE")  # 100MB
     allowed_audio_types: list[str] = Field(
-        default=["audio/mpeg", "audio/mp3", "audio/wav", "audio/x-wav"], alias="ALLOWED_AUDIO_TYPES"
+        default=["audio/mpeg", "audio/mp3", "audio/wav", "audio/x-wav"],
+        alias="ALLOWED_AUDIO_TYPES",
     )
 
     # CORS
     allowed_origins: list[str] = Field(
-        default=["http://localhost:3000", "http://localhost:5173", "http://localhost:8080"], alias="ALLOWED_ORIGINS"
+        default=[
+            "http://localhost:3000",
+            "http://localhost:5173",
+            "http://localhost:8080",
+        ],
+        alias="ALLOWED_ORIGINS",
     )
 
     # Translation settings
-    default_source_language: str = Field(default="auto", alias="DEFAULT_SOURCE_LANGUAGE")
+    default_source_language: str = Field(
+        default="auto", alias="DEFAULT_SOURCE_LANGUAGE"
+    )
     target_language: str = Field(default="en", alias="TARGET_LANGUAGE")
 
     # API URLs

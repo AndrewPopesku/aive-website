@@ -1,18 +1,18 @@
-from typing import Any, Dict, Generic, List, Optional, Type, TypeVar
+from typing import Any, TypeVar
 
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlmodel import Session, SQLModel, select
+from sqlmodel import SQLModel, select
 
 ModelType = TypeVar("ModelType", bound=SQLModel)
 
 
-class BaseRepository(Generic[ModelType]):
+class BaseRepository[ModelType: SQLModel]:
     """Base repository class with common CRUD operations."""
 
-    def __init__(self, model: Type[ModelType]):
+    def __init__(self, model: type[ModelType]):
         self.model = model
 
-    async def create(self, session: AsyncSession, obj_in: Dict[str, Any]) -> ModelType:
+    async def create(self, session: AsyncSession, obj_in: dict[str, Any]) -> ModelType:
         """Create a new object in the database."""
         # Convert HttpUrl objects to strings for JSON serialization
         processed_obj_in = self._process_httourls(obj_in)
@@ -22,15 +22,19 @@ class BaseRepository(Generic[ModelType]):
         await session.refresh(db_obj)
         return db_obj
 
-    async def get(self, session: AsyncSession, id: Any) -> Optional[ModelType]:
+    async def get(self, session: AsyncSession, id: Any) -> ModelType | None:
         """Get an object by ID."""
-        statement = select(self.model).where(self.model.id == id)
+        statement = select(self.model).where(self.model.id == id)  # type: ignore
         result = await session.execute(statement)
         return result.scalar_one_or_none()
 
     async def get_all(
-        self, session: AsyncSession, skip: int = 0, limit: int = 100, filters: Optional[Dict[str, Any]] = None
-    ) -> List[ModelType]:
+        self,
+        session: AsyncSession,
+        skip: int = 0,
+        limit: int = 100,
+        filters: dict[str, Any] | None = None,
+    ) -> list[ModelType]:
         """Get all objects with optional filtering and pagination."""
         statement = select(self.model)
 
@@ -44,9 +48,11 @@ class BaseRepository(Generic[ModelType]):
         statement = statement.offset(skip).limit(limit)
 
         result = await session.execute(statement)
-        return result.scalars().all()
+        return list(result.scalars().all())
 
-    async def update(self, session: AsyncSession, id: Any, obj_in: Dict[str, Any]) -> Optional[ModelType]:
+    async def update(
+        self, session: AsyncSession, id: Any, obj_in: dict[str, Any]
+    ) -> ModelType | None:
         """Update an object by ID."""
         db_obj = await self.get(session, id)
         if not db_obj:
@@ -78,11 +84,13 @@ class BaseRepository(Generic[ModelType]):
         db_obj = await self.get(session, id)
         return db_obj is not None
 
-    async def count(self, session: AsyncSession, filters: Optional[Dict[str, Any]] = None) -> int:
+    async def count(
+        self, session: AsyncSession, filters: dict[str, Any] | None = None
+    ) -> int:
         """Count objects with optional filtering."""
         from sqlalchemy import func
 
-        statement = select(func.count(self.model.id))
+        statement = select(func.count(self.model.id))  # type: ignore
 
         # Apply filters if provided
         if filters:
@@ -93,7 +101,7 @@ class BaseRepository(Generic[ModelType]):
         result = await session.execute(statement)
         return result.scalar_one()
 
-    def _process_httourls(self, data: Dict[str, Any]) -> Dict[str, Any]:
+    def _process_httourls(self, data: dict[str, Any]) -> dict[str, Any]:
         """Recursively convert HttpUrl objects to strings for JSON serialization."""
         from pydantic import HttpUrl
 
@@ -105,11 +113,16 @@ class BaseRepository(Generic[ModelType]):
                 processed_data[key] = self._process_httourls(value)
             elif isinstance(value, list):
                 processed_data[key] = [
-                    self._process_httourls(item)
-                    if isinstance(item, dict)
-                    else str(item)
-                    if hasattr(item, "__class__") and item.__class__.__name__ == "HttpUrl"
-                    else item
+                    (
+                        self._process_httourls(item)
+                        if isinstance(item, dict)
+                        else (
+                            str(item)
+                            if hasattr(item, "__class__")
+                            and item.__class__.__name__ == "HttpUrl"
+                            else item
+                        )
+                    )
                     for item in value
                 ]
             else:

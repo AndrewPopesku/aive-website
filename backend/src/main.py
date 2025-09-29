@@ -82,14 +82,18 @@ async def options_handler(request: Request, full_path: str):
 
 # Mount static files for videos
 try:
-    app.mount("/api/videos", StaticFiles(directory=str(settings.output_dir)), name="videos")
+    app.mount(
+        "/api/videos", StaticFiles(directory=str(settings.output_dir)), name="videos"
+    )
     logger.info(f"Mounted static files at /api/videos -> {settings.output_dir}")
 except Exception as e:
     logger.warning(f"Could not mount static files: {e}")
 
 # Mount static files for audio/music
 try:
-    app.mount("/api/audio", StaticFiles(directory=str(settings.audio_dir)), name="audio")
+    app.mount(
+        "/api/audio", StaticFiles(directory=str(settings.audio_dir)), name="audio"
+    )
     logger.info(f"Mounted static files at /api/audio -> {settings.audio_dir}")
 except Exception as e:
     logger.warning(f"Could not mount audio static files: {e}")
@@ -99,7 +103,12 @@ except Exception as e:
 @app.get("/health")
 async def health_check():
     """Health check endpoint."""
-    return {"status": "healthy", "service": "AIVE Backend API", "version": "0.1.0", "environment": settings.environment}
+    return {
+        "status": "healthy",
+        "service": "AIVE Backend API",
+        "version": "0.1.0",
+        "environment": settings.environment,
+    }
 
 
 # Register domain routers

@@ -1,6 +1,6 @@
-from typing import Any, Dict, Optional
+from typing import Any
 
-from fastapi import BackgroundTasks, HTTPException, status
+from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from base.controller import BaseController
@@ -12,7 +12,7 @@ from render.schemas import RenderRequest, RenderTaskCreate
 class RenderController(BaseController[RenderTaskRepository]):
     """Controller for render task business logic."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(RenderTaskRepository())
 
     async def create_render_task(
@@ -20,13 +20,17 @@ class RenderController(BaseController[RenderTaskRepository]):
     ) -> RenderTask:
         """Create a new render task for a project."""
         # Create render task data
-        task_data = RenderTaskCreate(project_id=project_id, status="pending", progress=0)
+        task_data = RenderTaskCreate(
+            project_id=project_id, status="pending", progress=0
+        )
 
         # Create the render task
         task_dict = task_data.model_dump()
         return await self.repository.create(session, task_dict)
 
-    async def get_render_status(self, session: AsyncSession, task_id: str) -> Dict[str, Any]:
+    async def get_render_status(
+        self, session: AsyncSession, task_id: str
+    ) -> dict[str, Any]:
         """Get render task status."""
         task = await self.get_entity(session, task_id)
 
@@ -42,10 +46,10 @@ class RenderController(BaseController[RenderTaskRepository]):
         session: AsyncSession,
         task_id: str,
         status: str,
-        progress: Optional[int] = None,
-        video_url: Optional[str] = None,
-        error_message: Optional[str] = None,
-    ) -> Optional[RenderTask]:
+        progress: int | None = None,
+        video_url: str | None = None,
+        error_message: str | None = None,
+    ) -> RenderTask | None:
         """Update render task status."""
         return await self.repository.update_status(
             session=session,
@@ -56,7 +60,9 @@ class RenderController(BaseController[RenderTaskRepository]):
             error_message=error_message,
         )
 
-    async def get_project_render_tasks(self, session: AsyncSession, project_id: str) -> Dict[str, Any]:
+    async def get_project_render_tasks(
+        self, session: AsyncSession, project_id: str
+    ) -> dict[str, Any]:
         """Get all render tasks for a project."""
         tasks = await self.repository.get_by_project_id(session, project_id)
 
@@ -76,9 +82,13 @@ class RenderController(BaseController[RenderTaskRepository]):
             ],
         }
 
-    async def get_latest_completed_render(self, session: AsyncSession, project_id: str) -> Optional[str]:
+    async def get_latest_completed_render(
+        self, session: AsyncSession, project_id: str
+    ) -> str | None:
         """Get the latest completed render video URL for a project."""
-        completed_tasks = await self.repository.get_completed_by_project_id(session, project_id)
+        completed_tasks = await self.repository.get_completed_by_project_id(
+            session, project_id
+        )
 
         if completed_tasks:
             return completed_tasks[0].output_file_path
