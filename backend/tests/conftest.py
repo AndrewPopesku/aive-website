@@ -1,14 +1,14 @@
-import pytest
 import asyncio
 from typing import AsyncGenerator
+
+import pytest
+from backend.src.main import app
 from fastapi.testclient import TestClient
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 from sqlmodel import SQLModel
-
-from backend.src.main import app
-from src.database.session import get_session
 from src.base.config import get_settings
+from src.database.session import get_session
 
 # Test database URL (in-memory SQLite for fast tests)
 TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
@@ -42,7 +42,7 @@ async def test_session() -> AsyncGenerator[AsyncSession, None]:
     async with test_engine.begin() as conn:
         # Create all tables
         await conn.run_sync(SQLModel.metadata.create_all)
-    
+
     async with TestSessionLocal() as session:
         yield session
 
@@ -50,15 +50,15 @@ async def test_session() -> AsyncGenerator[AsyncSession, None]:
 @pytest.fixture
 def test_client(test_session: AsyncSession) -> TestClient:
     """Create a test client with database session override."""
-    
+
     async def override_get_session() -> AsyncGenerator[AsyncSession, None]:
         yield test_session
-    
+
     app.dependency_overrides[get_session] = override_get_session
-    
+
     with TestClient(app) as client:
         yield client
-    
+
     app.dependency_overrides.clear()
 
 
@@ -74,7 +74,7 @@ def sample_project_data():
     return {
         "title": "Test Project",
         "description": "A test project for unit testing",
-        "audio_file_path": "/tmp/test_audio.mp3"
+        "audio_file_path": "/tmp/test_audio.mp3",
     }
 
 
@@ -85,15 +85,11 @@ def sample_sentence_data():
         "text": "This is a test sentence.",
         "translated_text": "This is a test sentence.",
         "start_time": 0.0,
-        "end_time": 3.0
+        "end_time": 3.0,
     }
 
 
 @pytest.fixture
 def sample_render_task_data():
     """Sample render task data for testing."""
-    return {
-        "project_id": "test-project-id",
-        "status": "pending",
-        "progress": 0
-    }
+    return {"project_id": "test-project-id", "status": "pending", "progress": 0}

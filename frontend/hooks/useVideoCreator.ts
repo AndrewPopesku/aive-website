@@ -250,9 +250,15 @@ export function useVideoCreator() {
       console.log("🎵 Setting music options:", musicRecommendations.length, "options available")
 
       setMusicOptions(musicRecommendations)
+      
+      // Auto-select the first available music option
+      const defaultMusic = musicRecommendations[0]
+      console.log("🎵 Auto-selecting default background music:", defaultMusic?.name)
+      
       setProject({
         ...project,
         musicOptions: musicRecommendations,
+        backgroundMusic: defaultMusic, // Auto-select first music option
         footageChoices: footageChoices
       })
     } catch (error) {

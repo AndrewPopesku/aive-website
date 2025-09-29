@@ -15,9 +15,10 @@ dependencies = [
     "python-dotenv>=1.0.1",
     "httpx>=0.28.0",
     "groq>=0.4.0",
-    "moviepy>=1.0.3",
+    "moviepy>=2.2.1",
     "python-jose[cryptography]>=3.3.0",
     "uuid>=1.30",
+    "pydantic>=2.11.9",
 ]
 
 [dependency-groups]
