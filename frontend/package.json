@@ -5,6 +5,9 @@
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",
+    "build:github": "GITHUB_PAGES=true next build",
+    "export": "next build && next export",
+    "serve": "npx serve out -s",
     "start": "next start",
     "lint": "eslint"
   },
