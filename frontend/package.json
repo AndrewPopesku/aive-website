@@ -33,7 +33,7 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "@hey-api/client-axios": "^0.9.1",
-    "@hey-api/openapi-ts": "^0.84.3",
+    "@hey-api/openapi-ts": "^0.84.4",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",

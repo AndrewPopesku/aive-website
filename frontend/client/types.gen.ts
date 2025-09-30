@@ -487,6 +487,39 @@ export type GetProjectRenderStatusApiV1ProjectsRenderStatusTaskIdGetResponses = 
     200: unknown;
 };
 
+export type GenerateTitleForProjectApiV1ProjectsProjectIdGenerateTitlePostData = {
+    body?: never;
+    path: {
+        /**
+         * Project Id
+         */
+        project_id: string;
+    };
+    query?: never;
+    url: '/api/v1/projects/{project_id}/generate-title';
+};
+
+export type GenerateTitleForProjectApiV1ProjectsProjectIdGenerateTitlePostErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type GenerateTitleForProjectApiV1ProjectsProjectIdGenerateTitlePostError = GenerateTitleForProjectApiV1ProjectsProjectIdGenerateTitlePostErrors[keyof GenerateTitleForProjectApiV1ProjectsProjectIdGenerateTitlePostErrors];
+
+export type GenerateTitleForProjectApiV1ProjectsProjectIdGenerateTitlePostResponses = {
+    /**
+     * Response Generate Title For Project Api V1 Projects  Project Id  Generate Title Post
+     * Successful Response
+     */
+    200: {
+        [key: string]: unknown;
+    };
+};
+
+export type GenerateTitleForProjectApiV1ProjectsProjectIdGenerateTitlePostResponse = GenerateTitleForProjectApiV1ProjectsProjectIdGenerateTitlePostResponses[keyof GenerateTitleForProjectApiV1ProjectsProjectIdGenerateTitlePostResponses];
+
 export type RenderProjectApiV1RenderProjectIdRenderPostData = {
     body: RenderRequest;
     path: {

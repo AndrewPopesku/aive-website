@@ -18,7 +18,7 @@ class ProjectRepository(BaseRepository[Project]):
         """Get a project by title."""
         statement = select(self.model).where(self.model.title == title)  # type: ignore
         result = await session.execute(statement)
-        return result.scalar_one_or_none()
+        return result.scalars().first()
 
 
 class SentenceRepository(BaseRepository[Sentence]):

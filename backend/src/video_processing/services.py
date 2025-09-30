@@ -130,6 +130,72 @@ async def translate_text(text: str) -> str:
         return text
 
 
+async def generate_project_title(sentences: list[str]) -> str:
+    """Generate a concise project title using Groq based on the content."""
+    try:
+        if not sentences:
+            return "Untitled Project"
+
+        # Combine first few sentences for context (limit to avoid token issues)
+        content_sample = " ".join(sentences[:3])[:500]
+
+        headers = {
+            "Authorization": f"Bearer {settings.groq_api_key}",
+            "Content-Type": "application/json",
+        }
+
+        prompt = f"""Based on the following content, generate a short, catchy title (maximum 5 words) that captures the main topic.
+
+Content: {content_sample}
+
+Respond with ONLY the title, nothing else."""
+
+        data = {
+            "model": "llama-3.3-70b-versatile",
+            "messages": [
+                {
+                    "role": "system",
+                    "content": "You are a professional content editor. Create short, engaging titles that capture the essence of content.",
+                },
+                {"role": "user", "content": prompt},
+            ],
+            "temperature": 0.7,
+            "max_tokens": 50,
+        }
+
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                f"{settings.groq_api_url}/chat/completions",
+                headers=headers,
+                json=data,
+                timeout=15.0,
+            )
+
+            if response.status_code != 200:
+                logger.error(f"Groq API title generation error: {response.text}")
+                return "Untitled Project"
+
+            result = response.json()
+            title = (
+                result.get("choices", [{}])[0]
+                .get("message", {})
+                .get("content", "")
+                .strip()
+                .replace('"', '')  # Remove quotes if present
+            )
+
+            if not title or len(title) > 100:  # Sanity check
+                logger.warning(f"Invalid title generated: {title}")
+                return "Untitled Project"
+
+            logger.info(f"Successfully generated title: '{title}'")
+            return title
+
+    except Exception as e:
+        logger.error(f"Error generating project title: {str(e)}")
+        return "Untitled Project"
+
+
 async def find_footage_for_sentence(
     text: str, translated_text: str | None = None
 ) -> str:

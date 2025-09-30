@@ -6,17 +6,14 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Clock, ImageIcon, Check, Loader2, RefreshCw, ExternalLink, Music, Play, Pause } from "lucide-react"
-import type { VideoProject, StockFootage, Sentence, BackgroundMusic } from "../types/video-creator"
+import { Clock, ImageIcon, Check, Loader2, RefreshCw, ExternalLink } from "lucide-react"
+import type { VideoProject, StockFootage, Sentence } from "../types/video-creator"
 
 interface SegmentationStepProps {
   project: VideoProject
   onNext: () => void
   getStockFootageForSentence: (sentence: Sentence) => Promise<StockFootage[]>
   onSelectFootage: (sentenceId: string, footage: StockFootage) => void
-  musicOptions: BackgroundMusic[]
-  selectBackgroundMusic: (music: BackgroundMusic) => void
 }
 
 export function SegmentationStep({
@@ -24,8 +21,6 @@ export function SegmentationStep({
   onNext,
   getStockFootageForSentence,
   onSelectFootage,
-  musicOptions,
-  selectBackgroundMusic,
 }: SegmentationStepProps) {
   const [loadingFootageForId, setLoadingFootageForId] = useState<string | null>(null)
   const [footageCache, setFootageCache] = useState<Record<string, StockFootage[]>>({})
@@ -106,7 +101,7 @@ export function SegmentationStep({
 
     const loadAllFootage = async () => {
       for (const sentence of project.sentences) {
-        const sentenceId = sentence.sentence_id || `sentence_${sentence.text.slice(0, 10)}`
+        const sentenceId = sentence.id || sentence.sentence_id
         
         if (!footageCache[sentenceId]) {
           setLoadingFootageForId(sentenceId)
@@ -139,7 +134,7 @@ export function SegmentationStep({
   const handleRefreshFootage = async (sentenceId: string) => {
     setLoadingFootageForId(sentenceId)
     try {
-      const sentence = project.sentences.find((s) => (s.sentence_id || `sentence_${s.text.slice(0, 10)}`) === sentenceId)
+      const sentence = project.sentences.find((s) => (s.id || s.sentence_id) === sentenceId)
       if (sentence) {
         const footage = await getStockFootageForSentence(sentence)
         setFootageCache((prev) => ({
@@ -168,7 +163,7 @@ export function SegmentationStep({
               Project: {project.title}
               <Badge variant="secondary">
                 <Clock className="w-4 h-4 mr-1" />
-                {formatTime(project.totalDuration)}
+                {formatTime(project.total_duration || project.totalDuration || 0)}
               </Badge>
             </CardTitle>
             <div className="text-sm text-muted-foreground">
@@ -181,7 +176,7 @@ export function SegmentationStep({
         <CardContent>
           <div className="space-y-6">
             {project.sentences.map((sentence, index) => {
-              const sentenceId = sentence.sentence_id || `sentence_${sentence.text.slice(0, 10)}`
+              const sentenceId = sentence.id || sentence.sentence_id || `sentence_${index}`
               return (
                 <Card key={sentenceId} className="overflow-hidden">
                   <div className="grid md:grid-cols-3 gap-4">
@@ -357,7 +352,7 @@ export function SegmentationStep({
                       <div className="flex items-center gap-2 mb-2">
                         <Badge variant="outline">#{index + 1}</Badge>
                         <span className="text-sm text-muted-foreground">
-                          {formatTime(sentence.start)} - {formatTime(sentence.end)}
+                          {formatTime(sentence.start_time || sentence.start || 0)} - {formatTime(sentence.end_time || sentence.end || 0)}
                         </span>
                       </div>
                       <p className="text-lg leading-relaxed mb-4">{sentence.text}</p>
@@ -389,58 +384,14 @@ export function SegmentationStep({
             })}
           </div>
         </CardContent>
-        <CardFooter className="flex-col space-y-4">
-          {/* Music Selection Section */}
-          <div className="w-full">
-            <h3 className="text-lg font-medium mb-4 flex items-center gap-2">
-              <Music className="w-5 h-5" />
-              Select Background Music
-            </h3>
-            
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {musicOptions && musicOptions.length > 0 ? (
-                musicOptions.map((music) => (
-                  <Card 
-                    key={music.id}
-                    className={`cursor-pointer transition-all hover:shadow-md ${
-                      project.backgroundMusic?.id === music.id ? "ring-2 ring-primary" : ""
-                    }`}
-                    onClick={() => selectBackgroundMusic(music)}
-                  >
-                    <CardContent className="p-4">
-                      <div className="flex items-center gap-2 mb-2">
-                        <h4 className="font-medium">{music.name}</h4>
-                        {project.backgroundMusic?.id === music.id && <Badge>Selected</Badge>}
-                      </div>
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <span>Background Music</span>
-                        {music.duration && (
-                          <span className="flex items-center gap-1">
-                            <Clock className="w-3 h-3" />
-                            {Math.floor(music.duration / 60)}:{String(Math.floor(music.duration % 60)).padStart(2, '0')}
-                          </span>
-                        )}
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))
-              ) : (
-                <div className="col-span-full text-center p-4 border rounded-md">
-                  <p className="text-muted-foreground">No background music options available</p>
-                </div>
-              )}
-            </div>
-          </div>
-          
-          <div className="w-full flex justify-end">
-            <Button 
-              onClick={onNext} 
-              size="lg" 
-              disabled={completedSentences < project.sentences.length || (musicOptions.length > 0 && !project.backgroundMusic)}
-            >
-              Continue to Preview
-            </Button>
-          </div>
+        <CardFooter className="flex justify-end">
+          <Button 
+            onClick={onNext} 
+            size="lg" 
+            disabled={completedSentences < project.sentences.length}
+          >
+            Continue to Preview
+          </Button>
         </CardFooter>
       </Card>
     </div>

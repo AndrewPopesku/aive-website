@@ -123,10 +123,16 @@ async def create_project(
             )
             sentences_create.append(sentence_create)
 
+        # Generate AI title from sentence texts
+        from video_processing.services import generate_project_title
+
+        sentence_texts = [s["text"] for s in sentences_data]
+        ai_title = await generate_project_title(sentence_texts)
+
         # Create project data
         project_data = ProjectCreate(
             id=project_id,
-            title=f"Project {project_id}",
+            title=ai_title,
             audio_file_path=str(audio_path),
         )
 
@@ -414,3 +420,32 @@ async def get_project_render_status(
         "error": status_info["error"],
         "progress": status_info["progress"],
     }
+
+
+@router.post("/{project_id}/generate-title", response_model=dict[str, Any])
+async def generate_title_for_project(
+    project_id: str, session: AsyncSession = Depends(get_session)
+):
+    """Generate an AI-powered title for an existing project based on its content."""
+    from video_processing.services import generate_project_title
+
+    # Get project details including sentences
+    project_details = await controller.get_project_with_details(session, project_id)
+    
+    # Extract sentence texts
+    sentence_texts = [s["text"] for s in project_details["sentences"]]
+    
+    if not sentence_texts:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Project has no sentences to generate title from",
+        )
+    
+    # Generate AI title
+    ai_title = await generate_project_title(sentence_texts)
+    
+    # Update project with new title
+    await controller.update_entity(session, project_id, {"title": ai_title})
+    
+    # Return updated project details
+    return await controller.get_project_with_details(session, project_id)

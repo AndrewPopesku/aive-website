@@ -11,22 +11,25 @@ from base.config import get_settings
 
 # Import MoviePy components
 if TYPE_CHECKING:
-    from moviepy.audio.io.AudioFileClip import AudioFileClip
-    from moviepy.editor import (
+    from moviepy import (
+        AudioFileClip,
         CompositeAudioClip,
         CompositeVideoClip,
         TextClip,
         VideoFileClip,
+        concatenate_audioclips,
         concatenate_videoclips,
     )
 else:
     try:
-        from moviepy.audio.io.AudioFileClip import AudioFileClip
-        from moviepy.editor import (
+        # MoviePy 2.x uses direct imports from moviepy package
+        from moviepy import (
+            AudioFileClip,
             CompositeAudioClip,
             CompositeVideoClip,
             TextClip,
             VideoFileClip,
+            concatenate_audioclips,
             concatenate_videoclips,
         )
 
@@ -49,6 +52,9 @@ else:
             pass
 
         def concatenate_videoclips(*args, **kwargs):  # type: ignore
+            pass
+
+        def concatenate_audioclips(*args, **kwargs):  # type: ignore
             pass
 
         MOVIEPY_AVAILABLE = False
@@ -136,7 +142,7 @@ class VideoEditor:
             logger.info("Adding voice-over audio...")
             if os.path.exists(audio_file_path):
                 voice_audio = AudioFileClip(audio_file_path)
-                final_video = final_video.set_audio(voice_audio)  # type: ignore
+                final_video = final_video.with_audio(voice_audio)  # type: ignore
 
             # Step 5: Add background music if provided
             if music_file_path and os.path.exists(music_file_path):
@@ -148,18 +154,20 @@ class VideoEditor:
 
                 # Loop music to match video duration if needed
                 if music_audio.duration < final_video.duration:  # type: ignore
-                    music_audio = music_audio.loop(duration=final_video.duration)  # type: ignore
+                    # Loop music by repeating it
+                    times_to_loop = int(final_video.duration / music_audio.duration) + 1  # type: ignore
+                    music_audio = concatenate_audioclips([music_audio] * times_to_loop).subclipped(0, final_video.duration)  # type: ignore
                 else:
-                    music_audio = music_audio.subclip(0, final_video.duration)  # type: ignore
+                    music_audio = music_audio.subclipped(0, final_video.duration)  # type: ignore
 
                 # Combine voice and music
                 if final_video.audio:  # type: ignore
                     composite_audio = CompositeAudioClip(
                         [final_video.audio, music_audio]  # type: ignore
                     )
-                    final_video = final_video.set_audio(composite_audio)  # type: ignore
+                    final_video = final_video.with_audio(composite_audio)  # type: ignore
                 else:
-                    final_video = final_video.set_audio(music_audio)  # type: ignore
+                    final_video = final_video.with_audio(music_audio)  # type: ignore
 
             # Step 6: Export final video
             logger.info(f"Exporting final video to {output_path}...")
@@ -242,17 +250,19 @@ class VideoEditor:
 
                 # Trim to sentence duration (or use full clip if shorter)
                 if video_clip.duration > duration:  # type: ignore
-                    video_clip = video_clip.subclip(0, duration)  # type: ignore
+                    video_clip = video_clip.subclipped(0, duration)  # type: ignore
                 else:
                     # If footage is shorter, loop it or extend
                     if duration > video_clip.duration * 2:  # type: ignore
-                        video_clip = video_clip.loop(duration=duration)  # type: ignore
+                        # Loop video by repeating it
+                        times_to_loop = int(duration / video_clip.duration) + 1  # type: ignore
+                        video_clip = concatenate_videoclips([video_clip] * times_to_loop).subclipped(0, duration)  # type: ignore
                     else:
-                        video_clip = video_clip.set_duration(duration)  # type: ignore
+                        video_clip = video_clip.with_duration(duration)  # type: ignore
 
                 # Resize to standard HD resolution
                 if video_clip.w != 1920 or video_clip.h != 1080:  # type: ignore
-                    video_clip = video_clip.resize(newsize=(1920, 1080))  # type: ignore
+                    video_clip = video_clip.resized(newsize=(1920, 1080))  # type: ignore
 
                 # Add subtitle if text exists
                 text = sentence.get("text", "").strip()
@@ -268,10 +278,10 @@ class VideoEditor:
                             stroke_width=2,
                             size=(1800, None),  # Max width with margins
                             method="caption",
-                        ).set_duration(duration)  # type: ignore
+                        ).with_duration(duration)  # type: ignore
 
                         # Position subtitle at bottom of screen
-                        subtitle = subtitle.set_position(("center", "bottom"))  # type: ignore
+                        subtitle = subtitle.with_position(("center", "bottom"))  # type: ignore
 
                         # Composite video with subtitle
                         video_clip = CompositeVideoClip([video_clip, subtitle])

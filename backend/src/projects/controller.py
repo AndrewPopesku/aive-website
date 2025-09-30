@@ -40,15 +40,18 @@ class ProjectController(BaseController[ProjectRepository]):
                 detail="Audio file path is required",
             )
 
-        # Check if project with same title already exists
-        existing_project = await self.repository.get_by_title(
-            session, project_data.title
-        )
-        if existing_project:
-            raise HTTPException(
-                status_code=status.HTTP_409_CONFLICT,
-                detail=f"Project with title '{project_data.title}' already exists",
+        # Check if project with same title already exists and make it unique
+        original_title = project_data.title
+        counter = 1
+        while True:
+            existing_project = await self.repository.get_by_title(
+                session, project_data.title
             )
+            if not existing_project:
+                break
+            # Append counter to make title unique
+            counter += 1
+            project_data.title = f"{original_title} ({counter})"
 
         # Create the project
         project_dict = project_data.model_dump()

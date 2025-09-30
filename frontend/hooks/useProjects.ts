@@ -45,7 +45,7 @@ export function useProjects() {
         return {
           id: item.project_id,
           project_id: item.project_id,
-          title: `Project ${item.project_id}`,
+          title: item.title,
           sentences: item.sentences && Array.isArray(item.sentences) ? (item.sentences as any[]).map((s: any, index: number) => ({
             ...s,
             start: s.start_time || s.start || 0,
@@ -98,7 +98,7 @@ export function useProjects() {
       return {
         id: project.project_id,
         project_id: project.project_id,
-        title: `Project ${project.project_id}`,
+        title: project.title,
         sentences: project.sentences && Array.isArray(project.sentences) ? (project.sentences as any[]).map((s: any, index: number) => ({
           ...s,
           start: s.start_time || s.start || 0,

@@ -2,10 +2,10 @@
 
 import { useState } from "react"
 import { Progress } from "@/components/ui/progress"
-import { useVideoCreator } from "./hooks/useVideoCreator"
-import { UploadStep } from "./components/upload-step"
-import { SegmentationStep } from "./components/segmentation-step"
-import { PreviewStep } from "./components/preview-step"
+import { useVideoCreator } from "@/hooks/useVideoCreator"
+import { UploadStep } from "@/components/upload-step"
+import { SegmentationStep } from "@/components/segmentation-step"
+import { PreviewStep } from "@/components/preview-step"
 
 export default function VideoCreatorApp() {
   const [uploadError, setUploadError] = useState<string | null>(null)
@@ -95,8 +95,6 @@ export default function VideoCreatorApp() {
             onNext={nextStep}
             getStockFootageForSentence={getStockFootageForSentence}
             onSelectFootage={selectFootageForSentence}
-            musicOptions={musicOptions}
-            selectBackgroundMusic={selectBackgroundMusic}
           />
         )}
 

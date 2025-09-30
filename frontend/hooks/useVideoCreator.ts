@@ -6,7 +6,8 @@ import {
   createProjectApiV1ProjectsPost, 
   submitFootageChoicesApiV1ProjectsProjectIdFootagePost,
   renderProjectApiV1RenderProjectIdRenderPost,
-  getRenderStatusApiV1RenderStatusTaskIdGet
+  getRenderStatusApiV1RenderStatusTaskIdGet,
+  generateTitleForProjectApiV1ProjectsProjectIdGenerateTitlePost
 } from "@/client"
 import { apiClient } from "@/lib/api-client"
 
@@ -95,7 +96,7 @@ export function useVideoCreator() {
         const newProject: VideoProject = {
           id: data.project_id,
           project_id: data.project_id,
-          title: file.name.replace(/\.[^/.]+$/, ""),
+          title: data.title, // Use AI-generated title from backend
           sentences,
           totalDuration: sentences.reduce((acc, s) => acc + (s.end - s.start), 0),
           analysis: {
@@ -475,6 +476,33 @@ export function useVideoCreator() {
     }
   }, [project, currentStep, submitFootageChoices])
 
+  // Generate AI title for project
+  const regenerateTitle = useCallback(async () => {
+    if (!project?.id) {
+      console.error("No project to regenerate title for")
+      return
+    }
+
+    setIsProcessing(true)
+    try {
+      const response = await generateTitleForProjectApiV1ProjectsProjectIdGenerateTitlePost({
+        client: apiClient,
+        path: { project_id: project.id },
+      })
+
+      if (response.data) {
+        // Update project with new title
+        setProject(prev => prev ? { ...prev, title: response.data.title } : null)
+        console.log("✅ Title regenerated:", response.data.title)
+      }
+    } catch (error) {
+      console.error("Failed to regenerate title:", error)
+      throw error
+    } finally {
+      setIsProcessing(false)
+    }
+  }, [project?.id])
+
   return {
     currentStep,
     project,
@@ -485,6 +513,7 @@ export function useVideoCreator() {
     selectBackgroundMusic,
     submitFootageChoices,
     renderProject,
+    regenerateTitle,
     nextStep,
     previousStep,
     musicOptions,
