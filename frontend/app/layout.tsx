@@ -3,9 +3,8 @@ import './globals.css'
 import { Navbar } from '@/components/ui/navbar'
 
 export const metadata: Metadata = {
-  title: 'Video Creator App',
+  title: 'AIVE - AI Video Editor',
   description: 'Create videos with AI-powered voiceover and footage',
-  generator: 'v0.dev',
 }
 
 export default function RootLayout({

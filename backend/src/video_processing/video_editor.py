@@ -3,50 +3,56 @@ import logging
 import os
 from datetime import datetime
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import httpx
 
 from base.config import get_settings
 
 # Import MoviePy components
-try:
-    from moviepy import (
-        AudioFileClip,
+if TYPE_CHECKING:
+    from moviepy.audio.io.AudioFileClip import AudioFileClip
+    from moviepy.editor import (
         CompositeAudioClip,
         CompositeVideoClip,
         TextClip,
         VideoFileClip,
-        concatenate_audioclips,
         concatenate_videoclips,
     )
+else:
+    try:
+        from moviepy.audio.io.AudioFileClip import AudioFileClip
+        from moviepy.editor import (
+            CompositeAudioClip,
+            CompositeVideoClip,
+            TextClip,
+            VideoFileClip,
+            concatenate_videoclips,
+        )
 
-    MOVIEPY_AVAILABLE = True
-except ImportError:
-    # Define placeholder classes for type hints
-    class VideoFileClip:
-        pass
+        MOVIEPY_AVAILABLE = True
+    except ImportError:
+        # Define placeholder classes for runtime when MoviePy is not available
+        class VideoFileClip:  # type: ignore
+            pass
 
-    class AudioFileClip:
-        pass
+        class AudioFileClip:  # type: ignore
+            pass
 
-    class TextClip:
-        pass
+        class TextClip:  # type: ignore
+            pass
 
-    class CompositeVideoClip:
-        pass
+        class CompositeVideoClip:  # type: ignore
+            pass
 
-    class CompositeAudioClip:
-        pass
+        class CompositeAudioClip:  # type: ignore
+            pass
 
-    def concatenate_videoclips(*args, **kwargs):
-        pass
+        def concatenate_videoclips(*args, **kwargs):  # type: ignore
+            pass
 
-    def concatenate_audioclips(*args, **kwargs):
-        pass
-
-    MOVIEPY_AVAILABLE = False
-    logging.warning("MoviePy not available. Video rendering will be disabled.")
+        MOVIEPY_AVAILABLE = False
+        logging.warning("MoviePy not available. Video rendering will be disabled.")
 
 logger = logging.getLogger(__name__)
 settings = get_settings()
@@ -130,7 +136,7 @@ class VideoEditor:
             logger.info("Adding voice-over audio...")
             if os.path.exists(audio_file_path):
                 voice_audio = AudioFileClip(audio_file_path)
-                final_video = final_video.with_audio(voice_audio)
+                final_video = final_video.set_audio(voice_audio)  # type: ignore
 
             # Step 5: Add background music if provided
             if music_file_path and os.path.exists(music_file_path):
@@ -138,22 +144,22 @@ class VideoEditor:
                 music_audio = AudioFileClip(music_file_path)
 
                 # Adjust music volume to be quieter than voice
-                music_audio = music_audio.with_volume_multiplied(0.3)
+                music_audio = music_audio.fx(lambda gf, t: 0.3 * gf(t))  # type: ignore
 
                 # Loop music to match video duration if needed
-                if music_audio.duration < final_video.duration:
-                    music_audio = music_audio.loop(duration=final_video.duration)
+                if music_audio.duration < final_video.duration:  # type: ignore
+                    music_audio = music_audio.loop(duration=final_video.duration)  # type: ignore
                 else:
-                    music_audio = music_audio.subclipped(0, final_video.duration)
+                    music_audio = music_audio.subclip(0, final_video.duration)  # type: ignore
 
                 # Combine voice and music
-                if final_video.audio:
+                if final_video.audio:  # type: ignore
                     composite_audio = CompositeAudioClip(
-                        [final_video.audio, music_audio]
+                        [final_video.audio, music_audio]  # type: ignore
                     )
-                    final_video = final_video.with_audio(composite_audio)
+                    final_video = final_video.set_audio(composite_audio)  # type: ignore
                 else:
-                    final_video = final_video.with_audio(music_audio)
+                    final_video = final_video.set_audio(music_audio)  # type: ignore
 
             # Step 6: Export final video
             logger.info(f"Exporting final video to {output_path}...")
@@ -213,7 +219,7 @@ class VideoEditor:
 
     def _create_video_clips(
         self, sentences: list[dict[str, Any]]
-    ) -> list[VideoFileClip]:
+    ) -> list[Any]:  # Returns list of VideoFileClip but using Any to avoid type issues
         """Create video clips with subtitles for each sentence."""
         clips = []
 
@@ -235,18 +241,18 @@ class VideoEditor:
                 video_clip = VideoFileClip(local_footage_path)
 
                 # Trim to sentence duration (or use full clip if shorter)
-                if video_clip.duration > duration:
-                    video_clip = video_clip.subclipped(0, duration)
+                if video_clip.duration > duration:  # type: ignore
+                    video_clip = video_clip.subclip(0, duration)  # type: ignore
                 else:
                     # If footage is shorter, loop it or extend
-                    if duration > video_clip.duration * 2:
-                        video_clip = video_clip.loop(duration=duration)
+                    if duration > video_clip.duration * 2:  # type: ignore
+                        video_clip = video_clip.loop(duration=duration)  # type: ignore
                     else:
-                        video_clip = video_clip.with_duration(duration)
+                        video_clip = video_clip.set_duration(duration)  # type: ignore
 
                 # Resize to standard HD resolution
-                if video_clip.w != 1920 or video_clip.h != 1080:
-                    video_clip = video_clip.resized(newsize=(1920, 1080))
+                if video_clip.w != 1920 or video_clip.h != 1080:  # type: ignore
+                    video_clip = video_clip.resize(newsize=(1920, 1080))  # type: ignore
 
                 # Add subtitle if text exists
                 text = sentence.get("text", "").strip()
@@ -262,10 +268,10 @@ class VideoEditor:
                             stroke_width=2,
                             size=(1800, None),  # Max width with margins
                             method="caption",
-                        ).with_duration(duration)
+                        ).set_duration(duration)  # type: ignore
 
                         # Position subtitle at bottom of screen
-                        subtitle = subtitle.with_position(("center", "bottom"))
+                        subtitle = subtitle.set_position(("center", "bottom"))  # type: ignore
 
                         # Composite video with subtitle
                         video_clip = CompositeVideoClip([video_clip, subtitle])

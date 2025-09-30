@@ -11,6 +11,8 @@ __all__ = [
     "engine",
     "async_session_factory",
     "init_db",
+    "create_db_and_tables",
+    "close_db",
     "get_session",
     "get_async_session",
     "get_async_session_context",
@@ -38,6 +40,16 @@ async def init_db() -> None:
     """Initialize the database, creating all tables."""
     async with engine.begin() as conn:
         await conn.run_sync(SQLModel.metadata.create_all)
+
+
+async def create_db_and_tables() -> None:
+    """Create database tables - alias for init_db for backward compatibility."""
+    await init_db()
+
+
+async def close_db() -> None:
+    """Close database connections."""
+    await engine.dispose()
 
 
 async def get_session() -> AsyncGenerator[AsyncSession, None]:
