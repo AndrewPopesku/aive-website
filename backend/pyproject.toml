@@ -5,6 +5,7 @@ description = "AI Video Editor Backend - Modern Python backend for interactive v
 requires-python = ">=3.13"
 readme = "README.md"
 dependencies = [
+    "greenlet",
     "fastapi>=0.116.0",
     "uvicorn>=0.35.0",
     "sqlmodel>=0.0.24",
@@ -20,6 +21,8 @@ dependencies = [
     "uuid>=1.30",
     "pydantic>=2.11.9",
     "black>=25.9.0",
+    "aiosqlite>=0.21.0",
+    "boto3>=1.40.45",
 ]
 
 [dependency-groups]

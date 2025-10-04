@@ -18,10 +18,20 @@ class Settings(BaseSettings):
     api_prefix: str = Field(default="/api/v1", alias="API_PREFIX")
 
     # Database
-    database_url: str = Field(
-        default="postgresql+asyncpg://user:password@localhost:5432/aive_db",
-        alias="DATABASE_URL",
-    )
+    # If DATABASE_URL is set, it takes precedence over individual Postgres settings
+    database_url_override: str | None = Field(default=None, alias="DATABASE_URL")
+    postgres_user: str = Field(default="user", alias="POSTGRES_USER")
+    postgres_password: str = Field(default="password", alias="POSTGRES_PASSWORD")
+    postgres_db: str = Field(default="aive_db", alias="POSTGRES_DB")
+    database_host: str = Field(default="localhost", alias="DATABASE_HOST")
+    database_port: int = Field(default=5432, alias="DATABASE_PORT")
+    
+    @property
+    def database_url(self) -> str:
+        """Construct the database URL from individual components or use override."""
+        if self.database_url_override:
+            return self.database_url_override
+        return f"postgresql+asyncpg://{self.postgres_user}:{self.postgres_password}@{self.database_host}:{self.database_port}/{self.postgres_db}"
 
     # Authentication
     jwt_secret_key: str = Field(
@@ -35,6 +45,14 @@ class Settings(BaseSettings):
     groq_api_key: str = Field(default="", alias="GROQ_API_KEY")
     pexels_api_key: str = Field(default="", alias="PEXELS_API_KEY")
     pixabay_api_key: str = Field(default="", alias="PIXABAY_API_KEY")
+
+    # AWS Configuration
+    aws_region: str = Field(default="us-east-1", alias="AWS_REGION")
+    aws_access_key_id: str = Field(default="", alias="AWS_ACCESS_KEY_ID")
+    aws_secret_access_key: str = Field(default="", alias="AWS_SECRET_ACCESS_KEY")
+    lambda_function_name: str = Field(default="aive-video-renderer-dev-renderVideo", alias="LAMBDA_FUNCTION_NAME")
+    s3_bucket: str = Field(default="aive-rendered-videos", alias="S3_BUCKET")
+    use_lambda_rendering: bool = Field(default=False, alias="USE_LAMBDA_RENDERING")
 
     # File Storage
     max_upload_size: int = Field(default=104857600, alias="MAX_UPLOAD_SIZE")  # 100MB

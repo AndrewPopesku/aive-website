@@ -1,0 +1,29 @@
+{
+  "name": "aive-video-renderer",
+  "version": "1.0.0",
+  "description": "AWS Lambda function for rendering AIVE project videos",
+  "main": "handler.py",
+  "scripts": {
+    "deploy": "serverless deploy",
+    "deploy:dev": "serverless deploy --stage dev",
+    "deploy:prod": "serverless deploy --stage prod",
+    "invoke": "serverless invoke -f renderVideo",
+    "logs": "serverless logs -f renderVideo --tail",
+    "remove": "serverless remove",
+    "info": "serverless info"
+  },
+  "keywords": [
+    "video",
+    "rendering",
+    "lambda",
+    "moviepy",
+    "serverless"
+  ],
+  "author": "AIVE Team",
+  "license": "MIT",
+  "devDependencies": {
+    "serverless": "^3.38.0",
+    "serverless-offline": "^13.3.0",
+    "serverless-python-requirements": "^6.1.0"
+  }
+}

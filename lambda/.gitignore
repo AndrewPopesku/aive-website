@@ -1,0 +1,28 @@
+# Serverless directories
+.serverless/
+
+# Node modules
+node_modules/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv
+
+# AWS
+.aws/
+
+# Test files
+test_event.json
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db

@@ -169,6 +169,18 @@ class ProjectController(BaseController[ProjectRepository]):
 
     def _sentence_to_dict(self, sentence: Sentence) -> dict[str, Any]:
         """Convert sentence model to dict."""
+        # Ensure selected_footage is properly serialized as a dict
+        selected_footage = sentence.selected_footage
+        if selected_footage is not None:
+            # If it's already a dict, use it directly
+            # If it's a string (shouldn't happen with JSON column), parse it
+            if isinstance(selected_footage, str):
+                import json
+                try:
+                    selected_footage = json.loads(selected_footage)
+                except json.JSONDecodeError:
+                    selected_footage = None
+        
         return {
             "id": sentence.id,
             "project_id": sentence.project_id,
@@ -176,7 +188,7 @@ class ProjectController(BaseController[ProjectRepository]):
             "translated_text": sentence.translated_text,
             "start_time": sentence.start_time,
             "end_time": sentence.end_time,
-            "selected_footage": sentence.selected_footage,
+            "selected_footage": selected_footage,
         }
 
     def _footage_choice_to_dict(self, footage_choice: FootageChoice) -> dict[str, Any]:

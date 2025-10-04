@@ -150,7 +150,12 @@ class VideoEditor:
                 music_audio = AudioFileClip(music_file_path)
 
                 # Adjust music volume to be quieter than voice
-                music_audio = music_audio.fx(lambda gf, t: 0.3 * gf(t))  # type: ignore
+                music_audio_scaled = music_audio.with_volume_scaled(0.3)  # type: ignore
+                
+                if music_audio_scaled:
+                    music_audio = music_audio_scaled
+                else:
+                    logger.warning("Failed to scale music volume, using original")
 
                 # Loop music to match video duration if needed
                 if music_audio.duration < final_video.duration:  # type: ignore

@@ -1,0 +1,92 @@
+service: aive-video-renderer
+
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  region: eu-west-1
+  stage: ${opt:stage, 'dev'}
+  memorySize: 3008  # ~3GB - Lambda max for standard config
+  timeout: 900  # 15 minutes - Lambda max
+  architecture: arm64
+  ecr:
+    images:
+      video-renderer:
+        path: ./
+        file: Dockerfile
+  
+  # Environment variables
+  environment:
+    S3_BUCKET: ${env:S3_BUCKET, 'aive-video-render-dev'}
+    ENVIRONMENT: ${self:provider.stage}
+  
+  # IAM permissions
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - s3:PutObject
+            - s3:PutObjectAcl
+            - s3:GetObject
+          Resource:
+            - arn:aws:s3:::${self:provider.environment.S3_BUCKET}/*
+        - Effect: Allow
+          Action:
+            - logs:CreateLogGroup
+            - logs:CreateLogStream
+            - logs:PutLogEvents
+          Resource: "*"
+
+functions:
+  renderVideo:
+    description: Renders video projects with MoviePy
+    image: video-renderer
+    events:
+      - httpApi:
+          path: /render
+          method: post
+    ephemeralStorageSize: 10240  # 10GB temp storage for video processing
+
+# Package configuration (if not using container)
+package:
+  individually: true
+  patterns:
+    - '!**'
+    - 'handler.py'
+    - 'requirements.txt'
+
+# Resources (S3 bucket for storing videos)
+# Note: Bucket already exists, so we don't create it here
+# If you need to recreate it, uncomment the resources section below
+# resources:
+#   Resources:
+#     VideoStorageBucket:
+#       Type: AWS::S3::Bucket
+#       Properties:
+#         BucketName: ${self:provider.environment.S3_BUCKET}
+#         CorsConfiguration:
+#           CorsRules:
+#             - AllowedHeaders:
+#                 - "*"
+#               AllowedMethods:
+#                 - GET
+#                 - PUT
+#                 - POST
+#               AllowedOrigins:
+#                 - "*"
+#               MaxAge: 3000
+#         PublicAccessBlockConfiguration:
+#           BlockPublicAcls: false
+#           BlockPublicPolicy: false
+#           IgnorePublicAcls: false
+#           RestrictPublicBuckets: false
+
+plugins:
+  - serverless-python-requirements
+  - serverless-offline
+
+custom:
+  pythonRequirements:
+    dockerizePip: true
+    layer: false

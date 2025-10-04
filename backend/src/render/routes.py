@@ -34,6 +34,7 @@ async def render_project(
     from projects.controller import ProjectController
     from video_processing.services import find_background_music
     from video_processing.video_editor import render_project_video
+    from video_processing.lambda_client import render_video_via_lambda
 
     settings = get_settings()
     project_controller = ProjectController()
@@ -105,32 +106,117 @@ async def render_project(
                     bg_session, render_task.id, "processing", progress=40
                 )
 
-                # Render the video
-                output_filename = f"{project_id}_final_video.mp4"
-                output_path = await render_project_video(
-                    project_data=project_details,
-                    audio_file_path=audio_file_path,
-                    music_file_path=music_file_path,
-                    output_filename=output_filename,
-                )
-
-                # Extract the actual filename from the returned path
-                actual_filename = Path(output_path).name
-                relative_path = f"/api/videos/{actual_filename}"
-
-                # Update status to complete
-                await controller.update_render_status(
-                    bg_session,
-                    render_task.id,
-                    "complete",
-                    progress=100,
-                    video_url=relative_path,
-                )
-
-                # Update project with video URL
-                await project_controller.update_entity(
-                    bg_session, project_id, {"video_url": relative_path}
-                )
+                # Render the video - use Lambda if enabled
+                if settings.use_lambda_rendering:
+                    # Lambda rendering - requires publicly accessible URLs
+                    # Upload audio file to S3 and get presigned URL
+                    from video_processing.s3_client import get_presigned_url_for_file
+                    
+                    try:
+                        logger.info("Uploading audio file to S3...")
+                        # Generate unique S3 key for the audio file
+                        audio_s3_key = f"audio/{project_id}/{Path(audio_file_path).name}"
+                        audio_s3_key_result, audio_url = await get_presigned_url_for_file(
+                            audio_file_path,
+                            s3_key=audio_s3_key,
+                            expiration=7200,  # 2 hours to allow for rendering
+                        )
+                        logger.info(f"Audio file uploaded to S3: {audio_s3_key_result}")
+                        
+                        # Upload music file to S3 if it's a local file
+                        music_url = None
+                        if music_file_path:
+                            # Check if it's a relative API path (starts with /api/)
+                            if music_file_path.startswith('/api/audio/'):
+                                # Convert relative API path to absolute local file path
+                                # /api/audio/file.mp3 -> /path/to/backend/static/audio/file.mp3
+                                filename = music_file_path.replace('/api/audio/', '')
+                                music_file_path = str(settings.audio_dir / filename)
+                                logger.info(f"Converted relative music path to: {music_file_path}")
+                            
+                            if os.path.exists(music_file_path):
+                                logger.info(f"Uploading music file to S3: {music_file_path}")
+                                music_s3_key = f"music/{project_id}/{Path(music_file_path).name}"
+                                music_s3_key_result, music_url = await get_presigned_url_for_file(
+                                    music_file_path,
+                                    s3_key=music_s3_key,
+                                    expiration=7200,
+                                )
+                                logger.info(f"Music file uploaded to S3: {music_s3_key_result}")
+                            elif music_file_path.startswith('http'):
+                                # If music_file_path is already a URL, use it directly
+                                music_url = music_file_path
+                                logger.info(f"Using music URL directly: {music_url}")
+                            else:
+                                logger.warning(f"Music file not found at {music_file_path}, skipping background music")
+                        
+                        logger.info("Starting Lambda video rendering...")
+                        # Debug: Log sentence data being sent to Lambda
+                        logger.info(f"Project ID: {project_id}")
+                        logger.info(f"Number of sentences: {len(project_details.get('sentences', []))}")
+                        for idx, sent in enumerate(project_details.get('sentences', [])[:3]):
+                            logger.info(f"Sentence {idx}: {sent.get('text', '')[:50]}...")
+                            logger.info(f"  - selected_footage type: {type(sent.get('selected_footage'))}")
+                            logger.info(f"  - selected_footage: {sent.get('selected_footage')}")
+                            if sent.get('selected_footage'):
+                                footage_url = sent.get('selected_footage', {}).get('url') if isinstance(sent.get('selected_footage'), dict) else None
+                                logger.info(f"  - footage URL: {footage_url}")
+                        
+                        result = await render_video_via_lambda(
+                            project_data=project_details,
+                            audio_url=audio_url,
+                            music_url=music_url,
+                        )
+                        
+                        # Get video URL from Lambda result
+                        video_url = result.get("video_url")
+                        s3_key = result.get("s3_key")
+                        
+                        logger.info(f"Lambda rendering complete: {video_url}")
+                        
+                        # Update status to complete
+                        await controller.update_render_status(
+                            bg_session,
+                            render_task.id,
+                            "complete",
+                            progress=100,
+                            video_url=video_url,
+                        )
+                        
+                        # Update project with video URL
+                        await project_controller.update_entity(
+                            bg_session, project_id, {"video_url": video_url}
+                        )
+                    except Exception as lambda_error:
+                        logger.error(f"Lambda rendering failed: {str(lambda_error)}")
+                        raise
+                else:
+                    # Local rendering (original method)
+                    output_filename = f"{project_id}_final_video.mp4"
+                    output_path = await render_project_video(
+                        project_data=project_details,
+                        audio_file_path=audio_file_path,
+                        music_file_path=music_file_path,
+                        output_filename=output_filename,
+                    )
+                    
+                    # Extract the actual filename from the returned path
+                    actual_filename = Path(output_path).name
+                    relative_path = f"/api/videos/{actual_filename}"
+                    
+                    # Update status to complete
+                    await controller.update_render_status(
+                        bg_session,
+                        render_task.id,
+                        "complete",
+                        progress=100,
+                        video_url=relative_path,
+                    )
+                    
+                    # Update project with video URL
+                    await project_controller.update_entity(
+                        bg_session, project_id, {"video_url": relative_path}
+                    )
 
             except Exception as e:
                 logger.error(f"Error in render task {render_task.id}: {str(e)}")
