@@ -4,10 +4,11 @@ from sqlalchemy import DateTime, Text, func
 from sqlmodel import Column, Field, SQLModel
 
 
-class RenderTask(SQLModel, table=True):
+class RenderTask(SQLModel, table=True, extend_existing=True):
     """Render task model representing video rendering operations."""
 
     __tablename__: str = "render_tasks"
+    __table_args__ = {"extend_existing": True}
 
     id: str = Field(primary_key=True, max_length=50, index=True)
     project_id: str = Field(..., max_length=50, foreign_key="projects.id", index=True)

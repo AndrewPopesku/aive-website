@@ -5,10 +5,11 @@ from sqlalchemy import DateTime, Text, func
 from sqlmodel import JSON, Column, Field, SQLModel
 
 
-class Project(SQLModel, table=True):
+class Project(SQLModel, table=True, extend_existing=True):
     """Project model representing a video creation project."""
 
     __tablename__: str = "projects"
+    __table_args__ = {"extend_existing": True}
 
     id: str = Field(primary_key=True, max_length=50, index=True)
     user_id: str = Field(..., max_length=50, foreign_key="users.id", index=True)
@@ -32,10 +33,11 @@ class Project(SQLModel, table=True):
     )
 
 
-class Sentence(SQLModel, table=True):
+class Sentence(SQLModel, table=True, extend_existing=True):
     """Sentence model representing a transcribed sentence with timing."""
 
     __tablename__: str = "sentences"
+    __table_args__ = {"extend_existing": True}
 
     id: str = Field(primary_key=True, max_length=50, index=True)
     project_id: str = Field(..., max_length=50, foreign_key="projects.id", index=True)
@@ -48,10 +50,11 @@ class Sentence(SQLModel, table=True):
     )
 
 
-class FootageChoice(SQLModel, table=True):
+class FootageChoice(SQLModel, table=True, extend_existing=True):
     """Footage choice model representing available footage options for sentences."""
 
     __tablename__: str = "footage_choices"
+    __table_args__ = {"extend_existing": True}
 
     id: str = Field(primary_key=True, max_length=50, index=True)
     project_id: str = Field(..., max_length=50, foreign_key="projects.id", index=True)
@@ -61,10 +64,11 @@ class FootageChoice(SQLModel, table=True):
     )
 
 
-class MusicRecommendation(SQLModel, table=True):
+class MusicRecommendation(SQLModel, table=True, extend_existing=True):
     """Music recommendation model for project background music."""
 
     __tablename__: str = "music_recommendations"
+    __table_args__ = {"extend_existing": True}
 
     id: str = Field(primary_key=True, max_length=50, index=True)
     project_id: str = Field(..., max_length=50, foreign_key="projects.id", index=True)

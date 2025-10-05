@@ -10,6 +10,7 @@ class User(SQLModel, table=True, extend_existing=True):
     """User model for authentication."""
 
     __tablename__: str = "users"
+    __table_args__ = {"extend_existing": True}
 
     id: str = Field(primary_key=True, max_length=50, index=True)
     email: str = Field(
