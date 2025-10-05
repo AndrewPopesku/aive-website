@@ -62,16 +62,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     loadAuth()
   }, [])
 
-  // Update apiClient interceptor when token changes
-  useEffect(() => {
-    if (token) {
-      // Set the authorization header
-      apiClient.instance.defaults.headers.common['Authorization'] = `Bearer ${token}`
-    } else {
-      // Remove the authorization header
-      delete apiClient.instance.defaults.headers.common['Authorization']
-    }
-  }, [token])
+  // Note: Authorization header is automatically set by the API client's auth callback
+  // which reads the token from localStorage
 
   const login = useCallback(async (username: string, password: string) => {
     try {

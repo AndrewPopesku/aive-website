@@ -9,6 +9,14 @@ export const apiClient = createClient(createConfig({
   },
   withCredentials: true, // Required to send Authorization header with credentials
   responseType: 'json',
+  // Configure authentication to read token from localStorage
+  auth: () => {
+    if (typeof window !== 'undefined') {
+      const token = localStorage.getItem('auth_token')
+      return token || undefined
+    }
+    return undefined
+  },
 }))
 
 // Export the client for use in hooks and components
