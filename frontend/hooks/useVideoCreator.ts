@@ -49,13 +49,20 @@ export function useVideoCreator() {
         
         // Make direct fetch request to avoid SDK issues
         const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+        
+        // Get auth token from localStorage
+        const token = localStorage.getItem('auth_token');
+        const headers: HeadersInit = {};
+        
+        if (token) {
+          headers['Authorization'] = `Bearer ${token}`;
+        }
+        
         const response = await fetch(`${apiUrl}/api/v1/projects/`, {
           method: 'POST',
           body: formData,
           // No Content-Type header - browser will set it with boundary
-          headers: {
-            // No headers needed for FormData
-          }
+          headers
         });
         
         if (!response.ok) {

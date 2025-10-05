@@ -6,12 +6,12 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 
-from src.base.config import get_settings
-from src.database.session import close_db, create_db_and_tables
-
 # Import routers
-from src.projects.routes import router as projects_router
-from src.render.routes import router as render_router
+from auth.routes import router as auth_router
+from base.config import get_settings
+from database.session import close_db, create_db_and_tables
+from projects.routes import router as projects_router
+from render.routes import router as render_router
 
 # Configure logging
 logging.basicConfig(
@@ -30,8 +30,8 @@ async def lifespan(app: FastAPI):
     logger.info("Starting up AIVE Backend API...")
 
     # Create database tables
-    await create_db_and_tables()
-    logger.info("Database tables created successfully")
+    # await create_db_and_tables()
+    # logger.info("Database tables created successfully")
 
     # Ensure directories exist
     settings.ensure_directories()
@@ -54,15 +54,31 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# Add CORS middleware - Allow all origins
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],  # Allow all origins
-    allow_credentials=False,  # Must be False when allow_origins is ["*"]
-    allow_methods=["*"],
-    allow_headers=["*"],
-    expose_headers=["*"],
-)
+# Add CORS middleware
+# For development: Allow all origins
+# For production: Update allow_origins to specific domains
+allow_all_origins = settings.environment == "development"
+
+if allow_all_origins:
+    # Development: Allow all origins
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"],
+        allow_credentials=False,  # Must be False when allow_origins is ["*"]
+        allow_methods=["*"],
+        allow_headers=["*"],
+        expose_headers=["*"],
+    )
+else:
+    # Production: Use specific origins from config
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=settings.allowed_origins,
+        allow_credentials=True,  # Required for JWT authentication
+        allow_methods=["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+        allow_headers=["*"],
+        expose_headers=["*"],
+    )
 
 
 # Add explicit OPTIONS handler for CORS preflight requests
@@ -114,6 +130,14 @@ async def health_check():
 # Register domain routers
 def register_routes():
     """Register all domain routes with the FastAPI app."""
+
+    # Authentication routes
+    app.include_router(
+        auth_router,
+        prefix=f"{settings.api_prefix}/auth",
+        tags=["Authentication"],
+    )
+    logger.info("Registered authentication routes")
 
     # Projects routes
     app.include_router(

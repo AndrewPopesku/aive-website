@@ -16,8 +16,17 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
+import { ProtectedRoute } from "@/components/protected-route"
 
 export default function ProjectsPage() {
+  return (
+    <ProtectedRoute>
+      <ProjectsPageContent />
+    </ProtectedRoute>
+  )
+}
+
+function ProjectsPageContent() {
   const { projects, loading, error, fetchProjects, deleteProject } = useProjects()
   const [isDeleting, setIsDeleting] = useState(false)
   const [projectToDelete, setProjectToDelete] = useState<string | null>(null)
@@ -63,7 +72,7 @@ export default function ProjectsPage() {
 
   if (loading) {
     return (
-      <div className="container mx-auto max-w-6xl py-8">
+      <div className="container mx-auto max-w-6xl px-4 md:px-6 py-8">
         <h1 className="text-2xl font-bold mb-6">My Projects</h1>
         <div className="flex items-center justify-center h-64">
           <p className="text-muted-foreground">Loading projects...</p>
@@ -74,7 +83,7 @@ export default function ProjectsPage() {
 
   if (error) {
     return (
-      <div className="container mx-auto max-w-6xl py-8">
+      <div className="container mx-auto max-w-6xl px-4 md:px-6 py-8">
         <h1 className="text-2xl font-bold mb-6">My Projects</h1>
         <div className="flex items-center justify-center h-64">
           <p className="text-red-500">{error}</p>
@@ -84,7 +93,7 @@ export default function ProjectsPage() {
   }
 
   return (
-    <div className="container mx-auto max-w-6xl py-8">
+    <div className="container mx-auto max-w-6xl px-4 md:px-6 py-8">
       <h1 className="text-2xl font-bold mb-6">My Projects</h1>
       
       {projects.length === 0 ? (

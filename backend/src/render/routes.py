@@ -6,6 +6,8 @@ from typing import Any
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from auth.dependencies import get_current_active_user, verify_project_access
+from auth.models import User
 from database.session import get_session
 from render.controller import RenderController
 from render.schemas import RenderRequest, RenderResponse, RenderStatusResponse
@@ -25,6 +27,7 @@ async def render_project(
     render_request: RenderRequest,
     background_tasks: BackgroundTasks,
     request: Request,
+    verified_project: dict[str, Any] = Depends(verify_project_access()),
     session: AsyncSession = Depends(get_session),
 ) -> RenderResponse:
     """Start rendering a video for a project."""
@@ -39,10 +42,8 @@ async def render_project(
     settings = get_settings()
     project_controller = ProjectController()
 
-    # Validate project exists and get project data
-    project_details = await project_controller.get_project_with_details(
-        session, project_id
-    )
+    # Get project data (already validated by dependency)
+    project_details = verified_project
 
     # Check if all sentences have selected footage
     sentences = project_details["sentences"]
@@ -251,7 +252,9 @@ async def get_render_status(
 
 @router.get("/{project_id}/tasks", response_model=dict[str, Any])
 async def get_project_render_tasks(
-    project_id: str, session: AsyncSession = Depends(get_session)
+    project_id: str,
+    verified_project: dict[str, Any] = Depends(verify_project_access()),
+    session: AsyncSession = Depends(get_session),
 ) -> dict[str, Any]:
     """Get all render tasks for a project."""
     return await controller.get_project_render_tasks(session, project_id)

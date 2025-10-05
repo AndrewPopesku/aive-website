@@ -75,6 +75,7 @@ class ProjectController(BaseController[ProjectRepository]):
         project_dict = {
             "id": project.id,
             "project_id": project.id,
+            "user_id": project.user_id,
             "title": project.title,
             "description": project.description,
             "audio_file_path": project.audio_file_path,

@@ -2,7 +2,7 @@
 
 import { type Client, formDataBodySerializer, type Options as Options2, type TDataShape } from './client';
 import { client } from './client.gen';
-import type { CreateProjectApiV1ProjectsPostData, CreateProjectApiV1ProjectsPostErrors, CreateProjectApiV1ProjectsPostResponses, DeleteProjectApiV1ProjectsProjectIdDeleteData, DeleteProjectApiV1ProjectsProjectIdDeleteErrors, DeleteProjectApiV1ProjectsProjectIdDeleteResponses, GenerateTitleForProjectApiV1ProjectsProjectIdGenerateTitlePostData, GenerateTitleForProjectApiV1ProjectsProjectIdGenerateTitlePostErrors, GenerateTitleForProjectApiV1ProjectsProjectIdGenerateTitlePostResponses, GetAllProjectsApiV1ProjectsGetData, GetAllProjectsApiV1ProjectsGetErrors, GetAllProjectsApiV1ProjectsGetResponses, GetProjectDetailsApiV1ProjectsProjectIdGetData, GetProjectDetailsApiV1ProjectsProjectIdGetErrors, GetProjectDetailsApiV1ProjectsProjectIdGetResponses, GetProjectRenderStatusApiV1ProjectsRenderStatusTaskIdGetData, GetProjectRenderStatusApiV1ProjectsRenderStatusTaskIdGetErrors, GetProjectRenderStatusApiV1ProjectsRenderStatusTaskIdGetResponses, GetProjectRenderTasksApiV1RenderProjectIdTasksGetData, GetProjectRenderTasksApiV1RenderProjectIdTasksGetErrors, GetProjectRenderTasksApiV1RenderProjectIdTasksGetResponses, GetRenderStatusApiV1RenderStatusTaskIdGetData, GetRenderStatusApiV1RenderStatusTaskIdGetErrors, GetRenderStatusApiV1RenderStatusTaskIdGetResponses, HealthCheckHealthGetData, HealthCheckHealthGetResponses, OptionsHandlerFullPathOptionsData, OptionsHandlerFullPathOptionsErrors, OptionsHandlerFullPathOptionsResponses, PatchProjectApiV1ProjectsProjectIdPatchData, PatchProjectApiV1ProjectsProjectIdPatchErrors, PatchProjectApiV1ProjectsProjectIdPatchResponses, RenderProjectApiV1ProjectsProjectIdRenderPostData, RenderProjectApiV1ProjectsProjectIdRenderPostErrors, RenderProjectApiV1ProjectsProjectIdRenderPostResponses, RenderProjectApiV1RenderProjectIdRenderPostData, RenderProjectApiV1RenderProjectIdRenderPostErrors, RenderProjectApiV1RenderProjectIdRenderPostResponses, SubmitFootageChoicesApiV1ProjectsProjectIdFootagePostData, SubmitFootageChoicesApiV1ProjectsProjectIdFootagePostErrors, SubmitFootageChoicesApiV1ProjectsProjectIdFootagePostResponses, UpdateProjectApiV1ProjectsProjectIdPutData, UpdateProjectApiV1ProjectsProjectIdPutErrors, UpdateProjectApiV1ProjectsProjectIdPutResponses, UpdateRenderStatusApiV1RenderStatusTaskIdPutData, UpdateRenderStatusApiV1RenderStatusTaskIdPutErrors, UpdateRenderStatusApiV1RenderStatusTaskIdPutResponses } from './types.gen';
+import type { ChangePasswordApiV1AuthChangePasswordPostData, ChangePasswordApiV1AuthChangePasswordPostErrors, ChangePasswordApiV1AuthChangePasswordPostResponses, CreateProjectApiV1ProjectsPostData, CreateProjectApiV1ProjectsPostErrors, CreateProjectApiV1ProjectsPostResponses, DeleteProjectApiV1ProjectsProjectIdDeleteData, DeleteProjectApiV1ProjectsProjectIdDeleteErrors, DeleteProjectApiV1ProjectsProjectIdDeleteResponses, GenerateTitleForProjectApiV1ProjectsProjectIdGenerateTitlePostData, GenerateTitleForProjectApiV1ProjectsProjectIdGenerateTitlePostErrors, GenerateTitleForProjectApiV1ProjectsProjectIdGenerateTitlePostResponses, GetAllProjectsApiV1ProjectsGetData, GetAllProjectsApiV1ProjectsGetErrors, GetAllProjectsApiV1ProjectsGetResponses, GetCurrentUserInfoApiV1AuthMeGetData, GetCurrentUserInfoApiV1AuthMeGetResponses, GetProjectDetailsApiV1ProjectsProjectIdGetData, GetProjectDetailsApiV1ProjectsProjectIdGetErrors, GetProjectDetailsApiV1ProjectsProjectIdGetResponses, GetProjectRenderStatusApiV1ProjectsRenderStatusTaskIdGetData, GetProjectRenderStatusApiV1ProjectsRenderStatusTaskIdGetErrors, GetProjectRenderStatusApiV1ProjectsRenderStatusTaskIdGetResponses, GetProjectRenderTasksApiV1RenderProjectIdTasksGetData, GetProjectRenderTasksApiV1RenderProjectIdTasksGetErrors, GetProjectRenderTasksApiV1RenderProjectIdTasksGetResponses, GetRenderStatusApiV1RenderStatusTaskIdGetData, GetRenderStatusApiV1RenderStatusTaskIdGetErrors, GetRenderStatusApiV1RenderStatusTaskIdGetResponses, HealthCheckHealthGetData, HealthCheckHealthGetResponses, LoginApiV1AuthLoginPostData, LoginApiV1AuthLoginPostErrors, LoginApiV1AuthLoginPostResponses, OptionsHandlerFullPathOptionsData, OptionsHandlerFullPathOptionsErrors, OptionsHandlerFullPathOptionsResponses, PatchProjectApiV1ProjectsProjectIdPatchData, PatchProjectApiV1ProjectsProjectIdPatchErrors, PatchProjectApiV1ProjectsProjectIdPatchResponses, RegisterApiV1AuthRegisterPostData, RegisterApiV1AuthRegisterPostErrors, RegisterApiV1AuthRegisterPostResponses, RenderProjectApiV1ProjectsProjectIdRenderPostData, RenderProjectApiV1ProjectsProjectIdRenderPostErrors, RenderProjectApiV1ProjectsProjectIdRenderPostResponses, RenderProjectApiV1RenderProjectIdRenderPostData, RenderProjectApiV1RenderProjectIdRenderPostErrors, RenderProjectApiV1RenderProjectIdRenderPostResponses, SubmitFootageChoicesApiV1ProjectsProjectIdFootagePostData, SubmitFootageChoicesApiV1ProjectsProjectIdFootagePostErrors, SubmitFootageChoicesApiV1ProjectsProjectIdFootagePostResponses, UpdateCurrentUserApiV1AuthMePutData, UpdateCurrentUserApiV1AuthMePutErrors, UpdateCurrentUserApiV1AuthMePutResponses, UpdateProjectApiV1ProjectsProjectIdPutData, UpdateProjectApiV1ProjectsProjectIdPutErrors, UpdateProjectApiV1ProjectsProjectIdPutResponses, UpdateRenderStatusApiV1RenderStatusTaskIdPutData, UpdateRenderStatusApiV1RenderStatusTaskIdPutErrors, UpdateRenderStatusApiV1RenderStatusTaskIdPutResponses, VerifyEmailApiV1AuthVerifyEmailUserIdPostData, VerifyEmailApiV1AuthVerifyEmailUserIdPostErrors, VerifyEmailApiV1AuthVerifyEmailUserIdPostResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -43,12 +43,153 @@ export const healthCheckHealthGet = <ThrowOnError extends boolean = false>(optio
 };
 
 /**
+ * Register
+ * Register a new user.
+ *
+ * - **email**: Valid email address
+ * - **username**: Unique username (3-50 characters)
+ * - **password**: Strong password (min 8 chars, must include uppercase, lowercase, and digit)
+ */
+export const registerApiV1AuthRegisterPost = <ThrowOnError extends boolean = false>(options: Options<RegisterApiV1AuthRegisterPostData, ThrowOnError>) => {
+    return (options.client ?? client).post<RegisterApiV1AuthRegisterPostResponses, RegisterApiV1AuthRegisterPostErrors, ThrowOnError>({
+        responseType: 'json',
+        url: '/api/v1/auth/register',
+        ...options,
+        headers: {
+            'Content-Type': 'application/json',
+            ...options.headers
+        }
+    });
+};
+
+/**
+ * Login
+ * Login with username/email and password.
+ *
+ * Returns a JWT access token that should be included in the Authorization header
+ * for protected endpoints as: `Bearer <token>`
+ *
+ * - **username**: Username or email address
+ * - **password**: User password
+ */
+export const loginApiV1AuthLoginPost = <ThrowOnError extends boolean = false>(options: Options<LoginApiV1AuthLoginPostData, ThrowOnError>) => {
+    return (options.client ?? client).post<LoginApiV1AuthLoginPostResponses, LoginApiV1AuthLoginPostErrors, ThrowOnError>({
+        responseType: 'json',
+        url: '/api/v1/auth/login',
+        ...options,
+        headers: {
+            'Content-Type': 'application/json',
+            ...options.headers
+        }
+    });
+};
+
+/**
+ * Get Current User Info
+ * Get current authenticated user information.
+ *
+ * Requires valid JWT token in Authorization header.
+ */
+export const getCurrentUserInfoApiV1AuthMeGet = <ThrowOnError extends boolean = false>(options?: Options<GetCurrentUserInfoApiV1AuthMeGetData, ThrowOnError>) => {
+    return (options?.client ?? client).get<GetCurrentUserInfoApiV1AuthMeGetResponses, unknown, ThrowOnError>({
+        responseType: 'json',
+        security: [
+            {
+                scheme: 'bearer',
+                type: 'http'
+            }
+        ],
+        url: '/api/v1/auth/me',
+        ...options
+    });
+};
+
+/**
+ * Update Current User
+ * Update current user profile.
+ *
+ * Requires valid JWT token in Authorization header.
+ *
+ * - **email**: New email address (optional)
+ * - **username**: New username (optional)
+ */
+export const updateCurrentUserApiV1AuthMePut = <ThrowOnError extends boolean = false>(options: Options<UpdateCurrentUserApiV1AuthMePutData, ThrowOnError>) => {
+    return (options.client ?? client).put<UpdateCurrentUserApiV1AuthMePutResponses, UpdateCurrentUserApiV1AuthMePutErrors, ThrowOnError>({
+        responseType: 'json',
+        security: [
+            {
+                scheme: 'bearer',
+                type: 'http'
+            }
+        ],
+        url: '/api/v1/auth/me',
+        ...options,
+        headers: {
+            'Content-Type': 'application/json',
+            ...options.headers
+        }
+    });
+};
+
+/**
+ * Change Password
+ * Change user password.
+ *
+ * Requires valid JWT token in Authorization header.
+ *
+ * - **current_password**: Current password
+ * - **new_password**: New password (min 8 chars, must include uppercase, lowercase, and digit)
+ */
+export const changePasswordApiV1AuthChangePasswordPost = <ThrowOnError extends boolean = false>(options: Options<ChangePasswordApiV1AuthChangePasswordPostData, ThrowOnError>) => {
+    return (options.client ?? client).post<ChangePasswordApiV1AuthChangePasswordPostResponses, ChangePasswordApiV1AuthChangePasswordPostErrors, ThrowOnError>({
+        responseType: 'json',
+        security: [
+            {
+                scheme: 'bearer',
+                type: 'http'
+            }
+        ],
+        url: '/api/v1/auth/change-password',
+        ...options,
+        headers: {
+            'Content-Type': 'application/json',
+            ...options.headers
+        }
+    });
+};
+
+/**
+ * Verify Email
+ * Verify user email address.
+ *
+ * This is a simplified endpoint. In production, you would:
+ * 1. Send a verification email with a unique token
+ * 2. User clicks link with token
+ * 3. Verify token and mark email as verified
+ *
+ * - **user_id**: User ID to verify
+ */
+export const verifyEmailApiV1AuthVerifyEmailUserIdPost = <ThrowOnError extends boolean = false>(options: Options<VerifyEmailApiV1AuthVerifyEmailUserIdPostData, ThrowOnError>) => {
+    return (options.client ?? client).post<VerifyEmailApiV1AuthVerifyEmailUserIdPostResponses, VerifyEmailApiV1AuthVerifyEmailUserIdPostErrors, ThrowOnError>({
+        responseType: 'json',
+        url: '/api/v1/auth/verify-email/{user_id}',
+        ...options
+    });
+};
+
+/**
  * Get All Projects
- * Get a list of all projects.
+ * Get a list of all projects for the current user.
  */
 export const getAllProjectsApiV1ProjectsGet = <ThrowOnError extends boolean = false>(options?: Options<GetAllProjectsApiV1ProjectsGetData, ThrowOnError>) => {
     return (options?.client ?? client).get<GetAllProjectsApiV1ProjectsGetResponses, GetAllProjectsApiV1ProjectsGetErrors, ThrowOnError>({
         responseType: 'json',
+        security: [
+            {
+                scheme: 'bearer',
+                type: 'http'
+            }
+        ],
         url: '/api/v1/projects/',
         ...options
     });
@@ -62,6 +203,12 @@ export const createProjectApiV1ProjectsPost = <ThrowOnError extends boolean = fa
     return (options.client ?? client).post<CreateProjectApiV1ProjectsPostResponses, CreateProjectApiV1ProjectsPostErrors, ThrowOnError>({
         ...formDataBodySerializer,
         responseType: 'json',
+        security: [
+            {
+                scheme: 'bearer',
+                type: 'http'
+            }
+        ],
         url: '/api/v1/projects/',
         ...options,
         headers: {
@@ -77,6 +224,12 @@ export const createProjectApiV1ProjectsPost = <ThrowOnError extends boolean = fa
  */
 export const deleteProjectApiV1ProjectsProjectIdDelete = <ThrowOnError extends boolean = false>(options: Options<DeleteProjectApiV1ProjectsProjectIdDeleteData, ThrowOnError>) => {
     return (options.client ?? client).delete<DeleteProjectApiV1ProjectsProjectIdDeleteResponses, DeleteProjectApiV1ProjectsProjectIdDeleteErrors, ThrowOnError>({
+        security: [
+            {
+                scheme: 'bearer',
+                type: 'http'
+            }
+        ],
         url: '/api/v1/projects/{project_id}',
         ...options
     });
@@ -89,6 +242,12 @@ export const deleteProjectApiV1ProjectsProjectIdDelete = <ThrowOnError extends b
 export const getProjectDetailsApiV1ProjectsProjectIdGet = <ThrowOnError extends boolean = false>(options: Options<GetProjectDetailsApiV1ProjectsProjectIdGetData, ThrowOnError>) => {
     return (options.client ?? client).get<GetProjectDetailsApiV1ProjectsProjectIdGetResponses, GetProjectDetailsApiV1ProjectsProjectIdGetErrors, ThrowOnError>({
         responseType: 'json',
+        security: [
+            {
+                scheme: 'bearer',
+                type: 'http'
+            }
+        ],
         url: '/api/v1/projects/{project_id}',
         ...options
     });
@@ -101,6 +260,12 @@ export const getProjectDetailsApiV1ProjectsProjectIdGet = <ThrowOnError extends 
 export const patchProjectApiV1ProjectsProjectIdPatch = <ThrowOnError extends boolean = false>(options: Options<PatchProjectApiV1ProjectsProjectIdPatchData, ThrowOnError>) => {
     return (options.client ?? client).patch<PatchProjectApiV1ProjectsProjectIdPatchResponses, PatchProjectApiV1ProjectsProjectIdPatchErrors, ThrowOnError>({
         responseType: 'json',
+        security: [
+            {
+                scheme: 'bearer',
+                type: 'http'
+            }
+        ],
         url: '/api/v1/projects/{project_id}',
         ...options,
         headers: {
@@ -117,6 +282,12 @@ export const patchProjectApiV1ProjectsProjectIdPatch = <ThrowOnError extends boo
 export const updateProjectApiV1ProjectsProjectIdPut = <ThrowOnError extends boolean = false>(options: Options<UpdateProjectApiV1ProjectsProjectIdPutData, ThrowOnError>) => {
     return (options.client ?? client).put<UpdateProjectApiV1ProjectsProjectIdPutResponses, UpdateProjectApiV1ProjectsProjectIdPutErrors, ThrowOnError>({
         responseType: 'json',
+        security: [
+            {
+                scheme: 'bearer',
+                type: 'http'
+            }
+        ],
         url: '/api/v1/projects/{project_id}',
         ...options,
         headers: {
@@ -133,6 +304,12 @@ export const updateProjectApiV1ProjectsProjectIdPut = <ThrowOnError extends bool
 export const submitFootageChoicesApiV1ProjectsProjectIdFootagePost = <ThrowOnError extends boolean = false>(options: Options<SubmitFootageChoicesApiV1ProjectsProjectIdFootagePostData, ThrowOnError>) => {
     return (options.client ?? client).post<SubmitFootageChoicesApiV1ProjectsProjectIdFootagePostResponses, SubmitFootageChoicesApiV1ProjectsProjectIdFootagePostErrors, ThrowOnError>({
         responseType: 'json',
+        security: [
+            {
+                scheme: 'bearer',
+                type: 'http'
+            }
+        ],
         url: '/api/v1/projects/{project_id}/footage',
         ...options,
         headers: {
@@ -149,6 +326,12 @@ export const submitFootageChoicesApiV1ProjectsProjectIdFootagePost = <ThrowOnErr
 export const renderProjectApiV1ProjectsProjectIdRenderPost = <ThrowOnError extends boolean = false>(options: Options<RenderProjectApiV1ProjectsProjectIdRenderPostData, ThrowOnError>) => {
     return (options.client ?? client).post<RenderProjectApiV1ProjectsProjectIdRenderPostResponses, RenderProjectApiV1ProjectsProjectIdRenderPostErrors, ThrowOnError>({
         responseType: 'json',
+        security: [
+            {
+                scheme: 'bearer',
+                type: 'http'
+            }
+        ],
         url: '/api/v1/projects/{project_id}/render',
         ...options
     });
@@ -173,6 +356,12 @@ export const getProjectRenderStatusApiV1ProjectsRenderStatusTaskIdGet = <ThrowOn
 export const generateTitleForProjectApiV1ProjectsProjectIdGenerateTitlePost = <ThrowOnError extends boolean = false>(options: Options<GenerateTitleForProjectApiV1ProjectsProjectIdGenerateTitlePostData, ThrowOnError>) => {
     return (options.client ?? client).post<GenerateTitleForProjectApiV1ProjectsProjectIdGenerateTitlePostResponses, GenerateTitleForProjectApiV1ProjectsProjectIdGenerateTitlePostErrors, ThrowOnError>({
         responseType: 'json',
+        security: [
+            {
+                scheme: 'bearer',
+                type: 'http'
+            }
+        ],
         url: '/api/v1/projects/{project_id}/generate-title',
         ...options
     });
@@ -185,6 +374,12 @@ export const generateTitleForProjectApiV1ProjectsProjectIdGenerateTitlePost = <T
 export const renderProjectApiV1RenderProjectIdRenderPost = <ThrowOnError extends boolean = false>(options: Options<RenderProjectApiV1RenderProjectIdRenderPostData, ThrowOnError>) => {
     return (options.client ?? client).post<RenderProjectApiV1RenderProjectIdRenderPostResponses, RenderProjectApiV1RenderProjectIdRenderPostErrors, ThrowOnError>({
         responseType: 'json',
+        security: [
+            {
+                scheme: 'bearer',
+                type: 'http'
+            }
+        ],
         url: '/api/v1/render/{project_id}/render',
         ...options,
         headers: {
@@ -229,6 +424,12 @@ export const updateRenderStatusApiV1RenderStatusTaskIdPut = <ThrowOnError extend
 export const getProjectRenderTasksApiV1RenderProjectIdTasksGet = <ThrowOnError extends boolean = false>(options: Options<GetProjectRenderTasksApiV1RenderProjectIdTasksGetData, ThrowOnError>) => {
     return (options.client ?? client).get<GetProjectRenderTasksApiV1RenderProjectIdTasksGetResponses, GetProjectRenderTasksApiV1RenderProjectIdTasksGetErrors, ThrowOnError>({
         responseType: 'json',
+        security: [
+            {
+                scheme: 'bearer',
+                type: 'http'
+            }
+        ],
         url: '/api/v1/render/{project_id}/tasks',
         ...options
     });

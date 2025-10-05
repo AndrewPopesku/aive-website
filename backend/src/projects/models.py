@@ -11,6 +11,7 @@ class Project(SQLModel, table=True):
     __tablename__: str = "projects"
 
     id: str = Field(primary_key=True, max_length=50, index=True)
+    user_id: str = Field(..., max_length=50, foreign_key="users.id", index=True)
     title: str = Field(..., description="Project title")
     description: str | None = Field(None, sa_column=Column(Text))
     audio_file_path: str | None = Field(

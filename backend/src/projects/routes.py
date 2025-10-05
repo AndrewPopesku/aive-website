@@ -12,6 +12,8 @@ from fastapi import (
 )
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from auth.dependencies import get_current_active_user, verify_project_access
+from auth.models import User
 from database.session import get_session
 from projects.controller import ProjectController
 from projects.schemas import (
@@ -26,10 +28,14 @@ controller = ProjectController()
 
 @router.get("/", response_model=list[dict[str, Any]])
 async def get_all_projects(
-    skip: int = 0, limit: int = 100, session: AsyncSession = Depends(get_session)
+    skip: int = 0,
+    limit: int = 100,
+    current_user: User = Depends(get_current_active_user),
+    session: AsyncSession = Depends(get_session),
 ):
-    """Get a list of all projects."""
-    projects = await controller.get_entities(session, skip, limit)
+    """Get a list of all projects for the current user."""
+    # Filter projects by current user
+    projects = await controller.get_entities(session, skip, limit, filters={"user_id": current_user.id})
 
     # Convert to response format with additional details
     result = []
@@ -42,15 +48,18 @@ async def get_all_projects(
 
 @router.get("/{project_id}", response_model=dict[str, Any])
 async def get_project_details(
-    project_id: str, session: AsyncSession = Depends(get_session)
+    project_id: str,
+    verified_project: dict[str, Any] = Depends(verify_project_access()),
 ):
     """Get details for a specific project."""
-    return await controller.get_project_with_details(session, project_id)
+    return verified_project
 
 
 @router.post("/", response_model=dict[str, Any], status_code=status.HTTP_201_CREATED)
 async def create_project(
-    audio_file: UploadFile = File(...), session: AsyncSession = Depends(get_session)
+    audio_file: UploadFile = File(...),
+    current_user: User = Depends(get_current_active_user),
+    session: AsyncSession = Depends(get_session),
 ):
     """Create a new project with audio file upload, transcription, and footage recommendations."""
     import os
@@ -135,9 +144,18 @@ async def create_project(
             title=ai_title,
             audio_file_path=str(audio_path),
         )
+        
+        # Add user_id to project data (override schema)
+        from projects.models import Project
+        project_dict = {
+            "id": project_id,
+            "user_id": current_user.id,
+            "title": ai_title,
+            "audio_file_path": str(audio_path),
+        }
 
-        # Create the project
-        project = await controller.create_project_with_audio(session, project_data)
+        # Create the project directly from dict
+        project = await controller.repository.create(session, project_dict)
 
         # Add sentences to the project
         await controller.add_sentences_to_project(session, project_id, sentences_create)
@@ -187,6 +205,7 @@ async def create_project(
 async def update_project(
     project_id: str,
     project_data: dict[str, Any],
+    verified_project: dict[str, Any] = Depends(verify_project_access()),
     session: AsyncSession = Depends(get_session),
 ):
     """Update a project by ID."""
@@ -198,6 +217,7 @@ async def update_project(
 async def patch_project(
     project_id: str,
     project_data: dict[str, Any],
+    verified_project: dict[str, Any] = Depends(verify_project_access()),
     session: AsyncSession = Depends(get_session),
 ):
     """Partially update a project by ID."""
@@ -206,7 +226,11 @@ async def patch_project(
 
 
 @router.delete("/{project_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_project(project_id: str, session: AsyncSession = Depends(get_session)):
+async def delete_project(
+    project_id: str,
+    verified_project: dict[str, Any] = Depends(verify_project_access()),
+    session: AsyncSession = Depends(get_session),
+):
     """Delete a project by ID."""
     await controller.delete_entity(session, project_id)
     return None
@@ -216,14 +240,12 @@ async def delete_project(project_id: str, session: AsyncSession = Depends(get_se
 async def submit_footage_choices(
     project_id: str,
     footage_choices: FootageChoices,
+    verified_project: dict[str, Any] = Depends(verify_project_access()),
     session: AsyncSession = Depends(get_session),
 ):
     """Submit footage choices for sentences and get music recommendations."""
     from projects.schemas import FootageChoiceCreate, MusicRecommendationCreate
     from video_processing.services import find_background_music
-
-    # Validate project exists
-    await controller.validate_entity_exists(session, project_id)
 
     # Process footage choices and update sentences
     for choice in footage_choices.footage_choices:
@@ -303,6 +325,7 @@ async def submit_footage_choices(
 async def render_project(
     project_id: str,
     background_tasks: BackgroundTasks,
+    verified_project: dict[str, Any] = Depends(verify_project_access()),
     session: AsyncSession = Depends(get_session),
 ):
     """Start rendering a video for a project."""
@@ -313,8 +336,8 @@ async def render_project(
     render_request = RenderRequest()
     render_controller = RenderController()
 
-    # Validate project exists and get project data
-    project_details = await controller.get_project_with_details(session, project_id)
+    # Get project data (already validated by dependency)
+    project_details = verified_project
 
     # Check if all sentences have selected footage
     sentences = project_details["sentences"]
@@ -424,13 +447,15 @@ async def get_project_render_status(
 
 @router.post("/{project_id}/generate-title", response_model=dict[str, Any])
 async def generate_title_for_project(
-    project_id: str, session: AsyncSession = Depends(get_session)
+    project_id: str,
+    verified_project: dict[str, Any] = Depends(verify_project_access()),
+    session: AsyncSession = Depends(get_session),
 ):
     """Generate an AI-powered title for an existing project based on its content."""
     from video_processing.services import generate_project_title
 
-    # Get project details including sentences
-    project_details = await controller.get_project_with_details(session, project_id)
+    # Get project details (already validated by dependency)
+    project_details = verified_project
     
     # Extract sentence texts
     sentence_texts = [s["text"] for s in project_details["sentences"]]

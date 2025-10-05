@@ -1,14 +1,21 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { Progress } from "@/components/ui/progress"
 import { useVideoCreator } from "@/hooks/useVideoCreator"
 import { UploadStep } from "@/components/upload-step"
 import { SegmentationStep } from "@/components/segmentation-step"
 import { PreviewStep } from "@/components/preview-step"
+import { useAuth } from "@/hooks/useAuth"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Button } from "@/components/ui/button"
+import Link from "next/link"
 
 export default function VideoCreatorApp() {
   const [uploadError, setUploadError] = useState<string | null>(null)
+  const { isAuthenticated, loading } = useAuth()
+  const router = useRouter()
   
   const {
     currentStep,
@@ -49,6 +56,12 @@ export default function VideoCreatorApp() {
   
   // Wrapper for processAudioFile to handle errors
   const handleProcessAudio = async (file: File) => {
+    // Check authentication before processing
+    if (!isAuthenticated) {
+      setUploadError("You must be logged in to create a project")
+      return
+    }
+    
     try {
       setUploadError(null)
       await processAudioFile(file)
@@ -56,6 +69,40 @@ export default function VideoCreatorApp() {
       console.error("Error processing audio:", error)
       setUploadError(error instanceof Error ? error.message : "Failed to process audio file")
     }
+  }
+
+  // Show loading state
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <p className="text-muted-foreground">Loading...</p>
+      </div>
+    )
+  }
+
+  // Show auth prompt if not authenticated and on upload step
+  if (!isAuthenticated && currentStep === "upload") {
+    return (
+      <div className="min-h-screen bg-background">
+        <div className="container mx-auto max-w-2xl py-16">
+          <Alert>
+            <AlertDescription className="flex flex-col items-center space-y-4 py-4">
+              <p className="text-center">
+                You need to be logged in to create video projects.
+              </p>
+              <div className="flex space-x-4">
+                <Link href="/login">
+                  <Button>Login</Button>
+                </Link>
+                <Link href="/register">
+                  <Button variant="outline">Register</Button>
+                </Link>
+              </div>
+            </AlertDescription>
+          </Alert>
+        </div>
+      </div>
+    )
   }
 
   return (

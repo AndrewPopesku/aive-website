@@ -8,8 +8,17 @@ import { PreviewStep } from "@/components/preview-step"
 import { VideoProject, StockFootage } from "@/types/video-creator"
 import { ChevronLeft, Download } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
+import { ProtectedRoute } from "@/components/protected-route"
 
 export default function ProjectDetailsClient() {
+  return (
+    <ProtectedRoute>
+      <ProjectDetailsContent />
+    </ProtectedRoute>
+  )
+}
+
+function ProjectDetailsContent() {
   const params = useParams()
   const router = useRouter()
   const { getProject } = useProjects()

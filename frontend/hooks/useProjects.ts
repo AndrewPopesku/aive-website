@@ -8,6 +8,7 @@ import {
   deleteProjectApiV1ProjectsProjectIdDelete
 } from "@/client"
 import { apiClient } from "@/lib/api-client"
+import { extractErrorMessage } from "@/lib/error-handler"
 
 // Base API URL for formatting video URLs
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
@@ -29,7 +30,8 @@ export function useProjects() {
       });
       
       if (response.error) {
-        throw new Error(`Failed to fetch projects: ${JSON.stringify(response.error)}`);
+        const errorMessage = extractErrorMessage(response.error, 'Failed to load projects')
+        throw new Error(errorMessage)
       }
       
       const data = response.data || [];
@@ -62,9 +64,10 @@ export function useProjects() {
       });
       
       setProjects(projectsData);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error fetching projects:', err)
-      setError('Failed to load projects')
+      const errorMessage = extractErrorMessage(err, 'Failed to load projects')
+      setError(errorMessage)
     } finally {
       setLoading(false)
     }
@@ -82,7 +85,8 @@ export function useProjects() {
       });
       
       if (response.error) {
-        throw new Error(`Failed to fetch project: ${JSON.stringify(response.error)}`);
+        const errorMessage = extractErrorMessage(response.error, 'Failed to load project')
+        throw new Error(errorMessage)
       }
       
       const project = response.data;
@@ -130,7 +134,8 @@ export function useProjects() {
       });
       
       if (response.error) {
-        throw new Error(`Failed to delete project: ${JSON.stringify(response.error)}`);
+        const errorMessage = extractErrorMessage(response.error, 'Failed to delete project')
+        throw new Error(errorMessage)
       }
       
       // Update local state after successful deletion

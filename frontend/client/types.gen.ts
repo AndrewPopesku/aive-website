@@ -85,6 +85,21 @@ export type MusicResponse = {
 };
 
 /**
+ * PasswordChange
+ * Schema for password change request.
+ */
+export type PasswordChange = {
+    /**
+     * Current Password
+     */
+    current_password: string;
+    /**
+     * New Password
+     */
+    new_password: string;
+};
+
+/**
  * RenderRequest
  * Schema for video render requests.
  */
@@ -135,6 +150,111 @@ export type RenderStatusResponse = {
      * Progress
      */
     progress?: number | null;
+};
+
+/**
+ * Token
+ * Schema for JWT token response.
+ */
+export type Token = {
+    /**
+     * Access Token
+     */
+    access_token: string;
+    /**
+     * Token Type
+     */
+    token_type?: string;
+    /**
+     * Expires In
+     * Token expiration time in seconds
+     */
+    expires_in: number;
+};
+
+/**
+ * UserCreate
+ * Schema for user registration.
+ */
+export type UserCreate = {
+    /**
+     * Email
+     */
+    email: string;
+    /**
+     * Username
+     */
+    username: string;
+    /**
+     * Password
+     */
+    password: string;
+};
+
+/**
+ * UserLogin
+ * Schema for user login.
+ */
+export type UserLogin = {
+    /**
+     * Username
+     * Username or email
+     */
+    username: string;
+    /**
+     * Password
+     */
+    password: string;
+};
+
+/**
+ * UserResponse
+ * Schema for user response (safe data only).
+ */
+export type UserResponse = {
+    /**
+     * Email
+     */
+    email: string;
+    /**
+     * Username
+     */
+    username: string;
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Is Active
+     */
+    is_active: boolean;
+    /**
+     * Is Verified
+     */
+    is_verified: boolean;
+    /**
+     * Created At
+     */
+    created_at: string;
+    /**
+     * Updated At
+     */
+    updated_at: string;
+};
+
+/**
+ * UserUpdate
+ * Schema for updating user profile.
+ */
+export type UserUpdate = {
+    /**
+     * Email
+     */
+    email?: string | null;
+    /**
+     * Username
+     */
+    username?: string | null;
 };
 
 /**
@@ -196,6 +316,150 @@ export type HealthCheckHealthGetResponses = {
      */
     200: unknown;
 };
+
+export type RegisterApiV1AuthRegisterPostData = {
+    body: UserCreate;
+    path?: never;
+    query?: never;
+    url: '/api/v1/auth/register';
+};
+
+export type RegisterApiV1AuthRegisterPostErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type RegisterApiV1AuthRegisterPostError = RegisterApiV1AuthRegisterPostErrors[keyof RegisterApiV1AuthRegisterPostErrors];
+
+export type RegisterApiV1AuthRegisterPostResponses = {
+    /**
+     * Successful Response
+     */
+    201: UserResponse;
+};
+
+export type RegisterApiV1AuthRegisterPostResponse = RegisterApiV1AuthRegisterPostResponses[keyof RegisterApiV1AuthRegisterPostResponses];
+
+export type LoginApiV1AuthLoginPostData = {
+    body: UserLogin;
+    path?: never;
+    query?: never;
+    url: '/api/v1/auth/login';
+};
+
+export type LoginApiV1AuthLoginPostErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type LoginApiV1AuthLoginPostError = LoginApiV1AuthLoginPostErrors[keyof LoginApiV1AuthLoginPostErrors];
+
+export type LoginApiV1AuthLoginPostResponses = {
+    /**
+     * Successful Response
+     */
+    200: Token;
+};
+
+export type LoginApiV1AuthLoginPostResponse = LoginApiV1AuthLoginPostResponses[keyof LoginApiV1AuthLoginPostResponses];
+
+export type GetCurrentUserInfoApiV1AuthMeGetData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/v1/auth/me';
+};
+
+export type GetCurrentUserInfoApiV1AuthMeGetResponses = {
+    /**
+     * Successful Response
+     */
+    200: UserResponse;
+};
+
+export type GetCurrentUserInfoApiV1AuthMeGetResponse = GetCurrentUserInfoApiV1AuthMeGetResponses[keyof GetCurrentUserInfoApiV1AuthMeGetResponses];
+
+export type UpdateCurrentUserApiV1AuthMePutData = {
+    body: UserUpdate;
+    path?: never;
+    query?: never;
+    url: '/api/v1/auth/me';
+};
+
+export type UpdateCurrentUserApiV1AuthMePutErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type UpdateCurrentUserApiV1AuthMePutError = UpdateCurrentUserApiV1AuthMePutErrors[keyof UpdateCurrentUserApiV1AuthMePutErrors];
+
+export type UpdateCurrentUserApiV1AuthMePutResponses = {
+    /**
+     * Successful Response
+     */
+    200: UserResponse;
+};
+
+export type UpdateCurrentUserApiV1AuthMePutResponse = UpdateCurrentUserApiV1AuthMePutResponses[keyof UpdateCurrentUserApiV1AuthMePutResponses];
+
+export type ChangePasswordApiV1AuthChangePasswordPostData = {
+    body: PasswordChange;
+    path?: never;
+    query?: never;
+    url: '/api/v1/auth/change-password';
+};
+
+export type ChangePasswordApiV1AuthChangePasswordPostErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type ChangePasswordApiV1AuthChangePasswordPostError = ChangePasswordApiV1AuthChangePasswordPostErrors[keyof ChangePasswordApiV1AuthChangePasswordPostErrors];
+
+export type ChangePasswordApiV1AuthChangePasswordPostResponses = {
+    /**
+     * Successful Response
+     */
+    200: unknown;
+};
+
+export type VerifyEmailApiV1AuthVerifyEmailUserIdPostData = {
+    body?: never;
+    path: {
+        /**
+         * User Id
+         */
+        user_id: string;
+    };
+    query?: never;
+    url: '/api/v1/auth/verify-email/{user_id}';
+};
+
+export type VerifyEmailApiV1AuthVerifyEmailUserIdPostErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type VerifyEmailApiV1AuthVerifyEmailUserIdPostError = VerifyEmailApiV1AuthVerifyEmailUserIdPostErrors[keyof VerifyEmailApiV1AuthVerifyEmailUserIdPostErrors];
+
+export type VerifyEmailApiV1AuthVerifyEmailUserIdPostResponses = {
+    /**
+     * Successful Response
+     */
+    200: UserResponse;
+};
+
+export type VerifyEmailApiV1AuthVerifyEmailUserIdPostResponse = VerifyEmailApiV1AuthVerifyEmailUserIdPostResponses[keyof VerifyEmailApiV1AuthVerifyEmailUserIdPostResponses];
 
 export type GetAllProjectsApiV1ProjectsGetData = {
     body?: never;
