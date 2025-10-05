@@ -7,7 +7,7 @@ export const apiClient = createClient(createConfig({
   headers: {
     // Don't set default Content-Type as it will be overridden for form data
   },
-  withCredentials: false, // Changed to false since we're using '*' for CORS
+  withCredentials: true, // Required to send Authorization header with credentials
   responseType: 'json',
 }))
 
