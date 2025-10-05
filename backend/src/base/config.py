@@ -1,7 +1,7 @@
 from functools import lru_cache
 from pathlib import Path
 
-from pydantic import Field
+from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -62,14 +62,17 @@ class Settings(BaseSettings):
     )
 
     # CORS
-    allowed_origins: list[str] = Field(
-        default=[
-            "http://localhost:3000",
-            "http://localhost:5173",
-            "http://localhost:8080",
-        ],
+    allowed_origins: list[str] | str = Field(
         alias="ALLOWED_ORIGINS",
     )
+    
+    @field_validator("allowed_origins", mode="before")
+    @classmethod
+    def parse_allowed_origins(cls, v):
+        """Parse allowed origins from comma-separated string or list."""
+        if isinstance(v, str):
+            return [origin.strip() for origin in v.split(",") if origin.strip()]
+        return v
 
     # Translation settings
     default_source_language: str = Field(

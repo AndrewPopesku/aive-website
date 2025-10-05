@@ -55,45 +55,18 @@ app = FastAPI(
 )
 
 # Add CORS middleware
-# For development: Allow all origins
-# For production: Update allow_origins to specific domains
-allow_all_origins = settings.environment == "development"
-
-if allow_all_origins:
-    # Development: Allow all origins
-    app.add_middleware(
-        CORSMiddleware,
-        allow_origins=["*"],
-        allow_credentials=False,  # Must be False when allow_origins is ["*"]
-        allow_methods=["*"],
-        allow_headers=["*"],
-        expose_headers=["*"],
-    )
-else:
-    # Production: Use specific origins from config
-    app.add_middleware(
-        CORSMiddleware,
-        allow_origins=settings.allowed_origins,
-        allow_credentials=True,  # Required for JWT authentication
-        allow_methods=["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
-        allow_headers=["*"],
-        expose_headers=["*"],
-    )
+# Always use specific origins to support credentials (required for JWT auth)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=settings.allowed_origins,
+    allow_credentials=True,  # Required for JWT authentication with Authorization header
+    allow_methods=["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    allow_headers=["Authorization", "Content-Type", "Accept", "Origin"],
+    expose_headers=["*"],
+)
 
 
-# Add explicit OPTIONS handler for CORS preflight requests
-@app.options("/{full_path:path}")
-async def options_handler(request: Request, full_path: str):
-    """Handle CORS preflight requests."""
-    return JSONResponse(
-        content={},
-        status_code=200,
-        headers={
-            "Access-Control-Allow-Origin": "*",
-            "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, PATCH, OPTIONS",
-            "Access-Control-Allow-Headers": "*",
-        },
-    )
+# Note: CORS preflight requests are handled automatically by CORSMiddleware
 
 
 # Mount static files for videos
